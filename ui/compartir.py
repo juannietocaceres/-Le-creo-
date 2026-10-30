@@ -26,7 +26,7 @@ from app import agente, entradas, proveedor, reglas, respuesta, trazas
 
 WEB = Path(__file__).parent / "web"
 MAX_CUERPO = 16_000                         # bytes para texto: un mensaje de estafa cabe de sobra
-MAX_CUERPO_IMAGEN = entradas.MAX_IMAGEN + 64_000
+MAX_CUERPO_ARCHIVO = max(entradas.MAX_IMAGEN, entradas.MAX_AUDIO) + 64_000
 MAX_ANALISIS_POR_MINUTO = 5
 
 ESTATICOS = {
@@ -45,7 +45,7 @@ SEGURIDAD = {
 }
 VACIO = {"semaforo": "vacio", "lineas": [
     "No me llegó ningún texto.",
-    "Si compartiste un audio, copia el texto del mensaje y pégalo aquí.",
+    "Comparte el mensaje, su captura o la nota de voz, o pégalo aquí.",
 ]}
 ESPERA = {"semaforo": "error", "lineas": [
     "Dame un minuto: estás revisando muchos mensajes seguidos.",
@@ -76,21 +76,21 @@ def pagina(compartido: dict | None) -> bytes:
 
 
 def leer_multipart(cuerpo: bytes, tipo: str) -> tuple[dict[str, str], bytes | None]:
-    """Campos de texto y la primera imagen de un formulario multipart/form-data."""
+    """Campos de texto y el primer archivo (captura o audio) de un formulario multipart/form-data."""
     mensaje = BytesParser(policy=policy.default).parsebytes(
         f"Content-Type: {tipo}\r\n\r\n".encode("latin-1") + cuerpo
     )
     campos: dict[str, str] = {}
-    imagen: bytes | None = None
+    archivo: bytes | None = None
     if not mensaje.is_multipart():
-        return campos, imagen
+        return campos, archivo
     for parte in mensaje.iter_parts():
-        if parte.get_filename() is not None or parte.get_content_maintype() == "image":
-            if imagen is None:
-                imagen = parte.get_payload(decode=True) or b""
+        if parte.get_filename() is not None or parte.get_content_maintype() in ("image", "audio"):
+            if archivo is None:
+                archivo = parte.get_payload(decode=True) or b""
         elif nombre := parte.get_param("name", header="content-disposition"):
             campos[nombre] = str(parte.get_content()).strip()
-    return campos, imagen
+    return campos, archivo
 
 
 def analizar(texto: str, tipo_entrada: str = "texto", extra: entradas.TextoExtraido | None = None) -> dict:
@@ -113,18 +113,18 @@ def analizar(texto: str, tipo_entrada: str = "texto", extra: entradas.TextoExtra
     return respuesta.para_web(resultado, semaforo)
 
 
-def analizar_imagen(imagen: bytes, pie: str = "") -> dict:
-    """Captura → texto → mismo agente. Si la captura trae un pie de foto, se agrega al texto leído."""
+def analizar_archivo(archivo: bytes, pie: str = "") -> dict:
+    """Captura o nota de voz → texto → mismo agente. Si trae un pie de foto, se agrega al texto."""
     try:
-        extraido = entradas.texto_de_imagen(imagen)
+        extraido = entradas.texto_de_archivo(archivo)
     except entradas.EntradaInvalida as exc:
         return {"semaforo": "error", "lineas": [str(exc)]}
     except proveedor.ProveedorError as exc:
-        mensaje = "La lectura de la imagen tardó demasiado. Inténtalo de nuevo." if str(exc) == "timeout" else str(exc)
+        mensaje = "Leer el archivo tardó demasiado. Inténtalo de nuevo." if str(exc) == "timeout" else str(exc)
         return {"semaforo": "error", "lineas": [mensaje]}
     texto = "\n".join(p for p in (pie.strip(), extraido.texto) if p)
-    datos = analizar(texto, "imagen", extraido)
-    return {**datos, "leido": extraido.texto}
+    datos = analizar(texto, extraido.tipo, extraido)
+    return {**datos, "leido": extraido.texto, "tipo": extraido.tipo}
 
 
 class Manejador(BaseHTTPRequestHandler):
@@ -153,11 +153,11 @@ class Manejador(BaseHTTPRequestHandler):
 
     def _cuerpo(self) -> bytes | None:
         largo = int(self.headers.get("Content-Length") or 0)
-        limite = MAX_CUERPO_IMAGEN if self._es_multipart() else MAX_CUERPO
+        limite = MAX_CUERPO_ARCHIVO if self._es_multipart() else MAX_CUERPO
         if largo > limite:
             # Se descarta el cuerpo (con tope) antes de responder: si no, en Windows la conexión
             # se corta y el cliente no alcanza a leer el 413.
-            if largo <= 2 * MAX_CUERPO_IMAGEN:
+            if largo <= 2 * MAX_CUERPO_ARCHIVO:
                 self.rfile.read(largo)
             self.close_connection = True
             self._json({"semaforo": "error", "lineas": ["El mensaje es demasiado grande para revisarlo."]},
@@ -196,16 +196,17 @@ class Manejador(BaseHTTPRequestHandler):
             return
 
         if ruta == "/compartir":
-            campos, imagen = self._formulario(cuerpo)
+            campos, archivo = self._formulario(cuerpo)
             texto = "\n".join(p for p in (campos.get("text", ""), campos.get("url", "")) if p)
-            if imagen is not None:
-                # La captura se analiza aquí mismo y la página llega con el resultado.
+            if archivo is not None:
+                # La captura o el audio se analizan aquí mismo y la página llega con el resultado.
                 if _permitido(self.client_address[0], time.monotonic()):
-                    datos = analizar_imagen(imagen, texto)
+                    datos = analizar_archivo(archivo, texto)
                 else:
                     datos = ESPERA
-                print(f"  análisis (captura) → {datos['semaforo']}")
-                self._enviar(200, pagina({"origen": "imagen", "resultado": datos}), "text/html; charset=utf-8")
+                origen = datos.get("tipo", "archivo")
+                print(f"  análisis ({origen}) → {datos['semaforo']}")
+                self._enviar(200, pagina({"origen": origen, "resultado": datos}), "text/html; charset=utf-8")
             else:
                 self._enviar(200, pagina({"origen": "texto", "texto": texto}), "text/html; charset=utf-8")
 
@@ -221,18 +222,18 @@ class Manejador(BaseHTTPRequestHandler):
             print(f"  análisis → {datos['semaforo']}")
             self._json(datos)
 
-        elif ruta == "/api/analizar_imagen":
+        elif ruta == "/api/analizar_archivo":
             if not self._es_multipart():
-                self._json({"semaforo": "error", "lineas": ["Envía la captura como formulario."]}, HTTPStatus.BAD_REQUEST)
+                self._json({"semaforo": "error", "lineas": ["Envía el archivo como formulario."]}, HTTPStatus.BAD_REQUEST)
                 return
-            _, imagen = self._formulario(cuerpo)
-            if imagen is None:
-                self._json({"semaforo": "error", "lineas": ["No llegó ninguna imagen."]}, HTTPStatus.BAD_REQUEST)
+            _, archivo = self._formulario(cuerpo)
+            if archivo is None:
+                self._json({"semaforo": "error", "lineas": ["No llegó ningún archivo."]}, HTTPStatus.BAD_REQUEST)
                 return
             if self._limitado():
                 return
-            datos = analizar_imagen(imagen)
-            print(f"  análisis (captura) → {datos['semaforo']}")
+            datos = analizar_archivo(archivo)
+            print(f"  análisis ({datos.get('tipo', 'archivo')}) → {datos['semaforo']}")
             self._json(datos)
 
         else:

@@ -20,7 +20,12 @@
       "title": "title",
       "text": "text",
       "url": "url",
-      "files": [{ "name": "imagen", "accept": ["image/png", "image/jpeg", "image/webp"] }]
+      "files": [{
+        "name": "archivo",
+        "accept": ["image/png", "image/jpeg", "image/webp",
+                   "audio/ogg", "audio/opus", "audio/mpeg", "audio/mp4", "audio/aac", "audio/wav", "audio/webm",
+                   ".opus", ".ogg", ".m4a", ".mp3"]
+      }]
     }
   }
 }

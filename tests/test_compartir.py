@@ -148,7 +148,7 @@ def test_manifiesto_acepta_imagenes_por_multipart(servidor):
     _, _, cuerpo = _get(servidor + "/manifest.webmanifest")
     st = json.loads(cuerpo)["share_target"]
     assert st["enctype"] == "multipart/form-data"
-    assert st["params"]["files"][0]["name"] == "imagen"
+    assert st["params"]["files"][0]["name"] == "archivo"
 
 
 def test_compartir_texto_por_multipart_tambien_funciona(servidor):
@@ -160,7 +160,7 @@ def test_compartir_texto_por_multipart_tambien_funciona(servidor):
 
 def test_compartir_captura_llega_con_el_resultado_y_traza_tipo_imagen(servidor):
     cuerpo, tipo = _multipart({"text": ""}, PNG)
-    with patch("app.entradas.texto_de_imagen", return_value=_extraido()) as leer, \
+    with patch("app.entradas.texto_de_archivo", return_value=_extraido()) as leer, \
          patch("app.agente.analizar", return_value=ROJO) as analizar, \
          patch("app.trazas.registrar") as registrar:
         _, html = _post(servidor + "/compartir", cuerpo, tipo)
@@ -175,11 +175,11 @@ def test_compartir_captura_llega_con_el_resultado_y_traza_tipo_imagen(servidor):
     assert dato["resultado"]["leido"] == TEXTO
 
 
-def test_api_analizar_imagen(servidor):
+def test_api_analizar_archivo_con_captura(servidor):
     cuerpo, tipo = _multipart({}, PNG)
-    with patch("app.entradas.texto_de_imagen", return_value=_extraido()), \
+    with patch("app.entradas.texto_de_archivo", return_value=_extraido()), \
          patch("app.agente.analizar", return_value=ROJO), patch("app.trazas.registrar"):
-        estado, respuesta_json = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+        estado, respuesta_json = _post(servidor + "/api/analizar_archivo", cuerpo, tipo)
     datos = json.loads(respuesta_json)
     assert estado == 200
     assert datos["lineas"][0] == ORDENES["rojo"]
@@ -189,9 +189,9 @@ def test_api_analizar_imagen(servidor):
 def test_api_imagen_sin_texto_pide_otra_sin_llamar_al_agente(servidor):
     from app.entradas import EntradaInvalida
     cuerpo, tipo = _multipart({}, PNG)
-    with patch("app.entradas.texto_de_imagen", side_effect=EntradaInvalida("No pude leer texto en esa imagen.")), \
+    with patch("app.entradas.texto_de_archivo", side_effect=EntradaInvalida("No pude leer texto en esa imagen.")), \
          patch("app.agente.analizar") as analizar:
-        _, respuesta_json = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+        _, respuesta_json = _post(servidor + "/api/analizar_archivo", cuerpo, tipo)
     analizar.assert_not_called()
     datos = json.loads(respuesta_json)
     assert datos["semaforo"] == "error"
@@ -200,16 +200,43 @@ def test_api_imagen_sin_texto_pide_otra_sin_llamar_al_agente(servidor):
 
 def test_api_imagen_sin_archivo(servidor):
     cuerpo, tipo = _multipart({"text": "hola"}, None)
-    estado, _ = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+    estado, _ = _post(servidor + "/api/analizar_archivo", cuerpo, tipo)
     assert estado == 400
 
 
 def test_api_imagen_demasiado_grande(servidor):
-    cuerpo, tipo = _multipart({}, PNG + b"\x00" * (compartir.MAX_CUERPO_IMAGEN + 10))
-    with patch("app.entradas.texto_de_imagen") as leer:
-        estado, _ = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+    cuerpo, tipo = _multipart({}, PNG + b"\x00" * (compartir.MAX_CUERPO_ARCHIVO + 10))
+    with patch("app.entradas.texto_de_archivo") as leer:
+        estado, _ = _post(servidor + "/api/analizar_archivo", cuerpo, tipo)
     assert estado == 413
     leer.assert_not_called()
+
+
+# ── D12: notas de voz ─────────────────────────────────────────────────────────
+
+OGG = b"OggS" + b"\x00" * 300
+
+
+def test_compartir_nota_de_voz_llega_con_el_resultado_y_traza_tipo_audio(servidor):
+    from app.entradas import TextoExtraido
+    extraido = TextoExtraido(texto=TEXTO, tokens_in=0, tokens_out=0, latencia_ms=900, tipo="audio")
+    cuerpo, tipo = _multipart({}, OGG, nombre_archivo="PTT-20261030.opus", tipo="audio/ogg")
+    with patch("app.entradas.texto_de_archivo", return_value=extraido) as leer, \
+         patch("app.agente.analizar", return_value=ROJO), \
+         patch("app.trazas.registrar") as registrar:
+        _, html = _post(servidor + "/compartir", cuerpo, tipo)
+    leer.assert_called_once_with(OGG)
+    assert registrar.call_args.kwargs["tipo_entrada"] == "audio"
+    dato = json.loads(re.search(r'type="application/json">(.*?)</script>', html).group(1))
+    assert dato["origen"] == "audio"
+    assert dato["resultado"]["tipo"] == "audio"
+    assert dato["resultado"]["leido"] == TEXTO
+
+
+def test_manifiesto_acepta_notas_de_voz(servidor):
+    _, _, cuerpo = _get(servidor + "/manifest.webmanifest")
+    aceptados = json.loads(cuerpo)["share_target"]["params"]["files"][0]["accept"]
+    assert "audio/ogg" in aceptados and ".opus" in aceptados
 
 
 def test_api_devuelve_la_orden_primero_y_guarda_traza(servidor):

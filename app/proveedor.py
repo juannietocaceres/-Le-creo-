@@ -87,6 +87,33 @@ _INSTRUCCION_IMAGEN = (
 )
 
 
+def transcribir_audio(datos: bytes, nombre: str, mime: str, timeout: float | None = None) -> str:
+    """Transcribe una nota de voz con Whisper (por defecto en Groq). Devuelve el texto."""
+    try:
+        base, llave, modelo = config.transcripcion()
+    except ValueError as exc:
+        raise ProveedorError(str(exc)) from exc
+    cliente = openai.OpenAI(api_key=llave, base_url=base,
+                            timeout=timeout if timeout is not None else config.TIMEOUT_S, max_retries=0)
+    for espera in (2, None):
+        try:
+            respuesta = cliente.audio.transcriptions.create(
+                model=modelo, file=(nombre, datos, mime), language="es", response_format="json",
+            )
+            return (getattr(respuesta, "text", "") or "").strip()
+        except openai.RateLimitError as exc:
+            if espera is None:
+                raise ProveedorError("El servicio de audio está saturado (429). Intenta en un momento.") from exc
+            time.sleep(espera)
+        except openai.APITimeoutError as exc:
+            raise ProveedorError("timeout") from exc
+        except openai.AuthenticationError as exc:
+            raise ProveedorError(f"La API key de {config.PROVEEDOR_TRANSCRIPCION} para audio no es válida.") from exc
+        except openai.OpenAIError as exc:
+            raise ProveedorError(f"No pude transcribir el audio ({type(exc).__name__}).") from exc
+    raise AssertionError("inalcanzable")
+
+
 def transcribir_imagen(imagen_base64: str, mime: str, timeout: float | None = None) -> tuple[str, int, int]:
     """Extrae el texto de una captura con el modelo multimodal. Devuelve (texto, tokens_in, tokens_out)."""
     mensajes = [{

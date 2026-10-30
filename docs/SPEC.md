@@ -122,7 +122,8 @@ Python 3.11 · Streamlit · página instalable (PWA con `share_target`) servida 
 8. **Pregunta que no es un mensaje** ("¿qué cripto compro?") → `fuera_de_alcance = true`, rechazo.
 9. **Captura ilegible o audio vacío (Fase 2)** → pedir de nuevo sin inventar contenido.
 10. **Entidad no en la tabla** → `canal_oficial` devuelve `{encontrada: false}`; la UI muestra que no se pudo verificar el canal.
-11. **Se comparte un audio (antes de D12)** → la página pide pegar el texto, sin inventar contenido. Una **captura** sí se lee (D11): si no tiene texto legible, se pide otra, sin inventar.
+11. **Se comparte una captura o una nota de voz** (D11, D12) → se convierte a texto y va al mismo agente. Si la captura no tiene texto legible o el audio no tiene palabras, se pide otro, sin inventar.
+14. **Número dictado en una nota de voz** → la transcripción puede equivocarse en un dígito; `buscar_numero` puede no encontrar un número que sí está reportado. El semáforo se apoya también en las tácticas.
 12. **El texto compartido trae HTML o scripts** → se muestra como texto plano: el contenido del estafador nunca se interpreta como código ni como formato.
 13. **Celular iPhone** → no aparece en el menú Compartir; se usa el botón "Pegar y revisar".
 

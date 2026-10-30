@@ -49,7 +49,7 @@ function pintar(datos) {
   if (datos.truncado) cuerpo.append(parrafo("El mensaje era muy largo: revisé solo el comienzo."));
   if (datos.leido) {
     const h = document.createElement("h2");
-    h.textContent = "Esto es lo que leí en la captura";
+    h.textContent = datos.tipo === "audio" ? "Esto es lo que escuché en el audio" : "Esto es lo que leí en la captura";
     const p = parrafo(datos.leido);
     p.className = "leido";
     cuerpo.append(h, p);
@@ -84,9 +84,9 @@ async function revisarCaptura(archivo) {
   if (!archivo) return;
   mostrar("espera");
   const datos = new FormData();
-  datos.append("imagen", archivo);
+  datos.append("archivo", archivo);
   try {
-    const resp = await fetch("/api/analizar_imagen", { method: "POST", body: datos });
+    const resp = await fetch("/api/analizar_archivo", { method: "POST", body: datos });
     pintar(await resp.json());
   } catch {
     pintar({ semaforo: "error", lineas: ["⚠️ No pude conectarme. Revisa tu internet e inténtalo de nuevo."] });
@@ -130,8 +130,8 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").cat
 const compartido = JSON.parse($("compartido").textContent);
 if (compartido !== null) {
   history.replaceState(null, "", "/");   // recargar no vuelve a enviar el formulario
-  if (compartido.origen === "imagen") {
-    marcarOrigen("📤 Captura recibida desde WhatsApp");
+  if (compartido.resultado) {
+    marcarOrigen(compartido.origen === "audio" ? "📤 Nota de voz recibida desde WhatsApp" : "📤 Captura recibida desde WhatsApp");
     pintar(compartido.resultado);
   } else {
     marcarOrigen("📤 Recibido desde WhatsApp");

@@ -46,3 +46,19 @@ def modelo() -> str:
     if not m:
         raise ValueError(f"MODELO_{PROVEEDOR.upper()} no está configurado en .env")
     return m
+
+
+# Notas de voz (D12): la transcripción va por su propio proveedor (Whisper en Groq),
+# independiente del que analiza el texto.
+PROVEEDOR_TRANSCRIPCION: str = os.getenv("PROVEEDOR_TRANSCRIPCION", "groq").lower()
+
+
+def transcripcion() -> tuple[str, str, str]:
+    """(base_url, api_key, modelo) para transcribir audio."""
+    m = os.getenv("MODELO_TRANSCRIPCION", "").split("#")[0].strip()
+    if not m:
+        raise ValueError("MODELO_TRANSCRIPCION no está configurado en .env")
+    llave = _KEYS[PROVEEDOR_TRANSCRIPCION]
+    if not llave:
+        raise ValueError(f"Falta {PROVEEDOR_TRANSCRIPCION.upper()}_API_KEY en .env para transcribir audios")
+    return _BASES[PROVEEDOR_TRANSCRIPCION], llave, m
