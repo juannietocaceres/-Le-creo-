@@ -54,6 +54,11 @@ function pintar(datos) {
     p.className = "leido";
     cuerpo.append(h, p);
   }
+  if (datos.analizado_con) {
+    const p = parrafo(`Analizado con ${datos.analizado_con}`);
+    p.className = "analizado-con";
+    cuerpo.append(p);
+  }
   $("detalle").hidden = !cuerpo.childElementCount;
   $("detalle").open = false;
 

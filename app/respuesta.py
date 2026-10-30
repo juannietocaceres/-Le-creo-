@@ -107,6 +107,13 @@ def que_revise(r: ResultadoAgente) -> list[str]:
 
 def para_web(r: ResultadoAgente, semaforo: str) -> dict:
     """Resultado para la página de compartir, como datos. La página lo pinta con textContent."""
+    datos = _para_web(r, semaforo)
+    if r.proveedor_usado:   # D17: deja ver en la demo con qué IA salió cada respuesta
+        datos["analizado_con"] = " · ".join(x for x in (r.proveedor_usado, r.modelo_usado) if x)
+    return datos
+
+
+def _para_web(r: ResultadoAgente, semaforo: str) -> dict:
     if semaforo == "error" or r.contrato is None:
         if r.error == "contrato_invalido" and r.texto_plano:
             # Sección 11: texto plano con aviso. Sin semáforo, porque no hay señales verificadas.

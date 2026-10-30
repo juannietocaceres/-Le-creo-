@@ -112,6 +112,7 @@ _RESPUESTA_FORZADA_INVALIDA = "Me parece que es una estafa, mejor no pagues nada
 
 def analizar(texto: str) -> ResultadoAgente:
     """Punto de entrada. Devuelve el contrato (si lo hubo) y las métricas del análisis."""
+    config.recargar_si_cambio()   # D17: un cambio de PROVEEDOR en el .env aplica desde este análisis
     truncado = len(texto) > MAX_TEXTO
     texto = texto[:MAX_TEXTO]
 

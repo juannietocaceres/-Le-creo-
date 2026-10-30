@@ -19,6 +19,8 @@ python scripts\cargar_semillas.py
 streamlit run ui\app_streamlit.py
 ```
 
+**Cambiar de proveedor en plena demo (D17):** con la app corriendo, cambia `PROVEEDOR=google` por `PROVEEDOR=groq` en `.env` y guarda. El siguiente análisis ya usa Groq, sin reiniciar nada. En "Ver por qué" aparece "Analizado con groq · …" y la traza registra el proveedor.
+
 ## Compartir desde WhatsApp (para personas mayores)
 
 Página instalable: en Android, la persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → **¿Le creo?** y ve la respuesta en grande. También acepta **pantallazos y notas de voz**: compartidos desde WhatsApp o con el botón "📷 🎙️ Revisar captura o audio". Las notas de voz se transcriben con Whisper en Groq (`MODELO_TRANSCRIPCION` en `.env`). En iPhone se usa "Pegar y revisar" o el botón.

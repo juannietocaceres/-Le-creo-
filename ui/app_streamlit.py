@@ -118,6 +118,7 @@ def _mostrar_resultado(contrato: ContratoSalida, semaforo: str, senales: list[st
 st.title("🔍 ¿Le creo?")
 st.caption("Una segunda opinión antes de pagar. Pega el mensaje que te llegó y te digo si parece estafa, qué truco usa y qué hacer.")
 
+config.recargar_si_cambio()   # D17: el proveedor se cambia en el .env sin reiniciar
 try:
     config.modelo()
     modelo_ok = True

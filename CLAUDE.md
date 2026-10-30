@@ -41,6 +41,8 @@ python scripts\probar_casos.py 5
 
 Errores forzados (D13, solo para demo y pruebas): `FORZAR_ERROR=429 | timeout | invalida` en `.env` o como variable de entorno. El 429 pasa al proveedor de `PROVEEDOR_RESPALDO`. Dejarlo vacío en uso normal: las trazas lo marcan en el campo `forzado`.
 
+Cambio en vivo (D17): `config.recargar_si_cambio()` relee el `.env` antes de cada análisis si su fecha de modificación cambió, así `PROVEEDOR` (y `FORZAR_ERROR`) se cambian sin reiniciar. Al arrancar, las variables que ya vienen de la consola ganan al `.env`; en las relecturas gana el `.env`.
+
 ## Reglas duras (sección 14 del documento maestro)
 1. El agente **nunca** abre ni visita un enlace. Solo analiza el texto de la URL.
 2. El semáforo lo decide `reglas.py`, **nunca** el LLM directamente.
