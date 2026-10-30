@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    container_name: lecreo-db
+    environment:
+      POSTGRES_USER: lecreo
+      POSTGRES_PASSWORD: lecreo
+      POSTGRES_DB: lecreo
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - lecreo-data:/var/lib/postgresql/data
+
+volumes:
+  lecreo-data:

@@ -1,0 +1,106 @@
+[
+  {
+    "id": "urgencia",
+    "nombre": "Urgencia",
+    "descripcion": "Te apuran para que actúes sin pensar, creando pánico o miedo a perder algo.",
+    "senales": ["hoy mismo", "últimas horas", "o se cancela", "inmediatamente", "antes de las", "en las próximas"],
+    "ejemplo": "Su cuenta será bloqueada en 2 horas si no actualiza sus datos.",
+    "fuerza": "fuerte"
+  },
+  {
+    "id": "autoridad_falsa",
+    "nombre": "Autoridad falsa",
+    "descripcion": "Se hace pasar por un banco, la DIAN, la Policía u otra entidad de confianza.",
+    "senales": ["Bancolombia informa", "DIAN notifica", "Policía Nacional", "su entidad bancaria", "desde Nequi"],
+    "ejemplo": "Estimado cliente, Bancolombia le informa que su cuenta ha sido suspendida.",
+    "fuerza": "fuerte"
+  },
+  {
+    "id": "pide_credenciales",
+    "nombre": "Pide credenciales",
+    "descripcion": "Solicita clave, contraseña, PIN, código de verificación OTP o token.",
+    "senales": ["ingrese su clave", "código que le llegó", "token", "pin", "contraseña", "OTP"],
+    "ejemplo": "Para verificar su identidad comparta el código de 6 dígitos que recibió por SMS.",
+    "fuerza": "fuerte"
+  },
+  {
+    "id": "familiar_en_apuros",
+    "nombre": "Familiar en apuros",
+    "descripcion": "Alguien dice ser un familiar con número nuevo y en situación de emergencia.",
+    "senales": ["mami soy yo", "es mi número nuevo", "tuve un accidente", "no le cuentes a papá", "este es mi nuevo número"],
+    "ejemplo": "Mami, este es mi número nuevo, tuve un problema con el celular. Necesito que me hagas una transferencia urgente.",
+    "fuerza": "fuerte"
+  },
+  {
+    "id": "paquete_retenido",
+    "nombre": "Paquete retenido",
+    "descripcion": "Notificación falsa de paquete detenido que pide un pago mínimo para liberarlo.",
+    "senales": ["paquete retenido", "pago de envío", "arancel pendiente", "liberación de paquete", "Servientrega informa"],
+    "ejemplo": "Su paquete está retenido por falta de pago de $3.500. Pague aquí: bit.ly/xxxx",
+    "fuerza": "media"
+  },
+  {
+    "id": "premio_inesperado",
+    "nombre": "Premio inesperado",
+    "descripcion": "Notifica un premio, lotería o herencia que nadie esperaba ganar.",
+    "senales": ["felicitaciones", "ganador", "seleccionado", "herencia", "premio de", "ha sido elegido"],
+    "ejemplo": "¡Felicitaciones! Ha sido seleccionado para recibir $5.000.000. Reclame aquí.",
+    "fuerza": "media"
+  },
+  {
+    "id": "oferta_irresistible",
+    "nombre": "Oferta irresistible",
+    "descripcion": "Empleo fácil, inversión que duplica el dinero o producto muy barato.",
+    "senales": ["gane desde casa", "duplica tu dinero", "sin experiencia", "trabajo fácil", "inversión segura"],
+    "ejemplo": "Gana $300.000 diarios desde casa, sin experiencia. Solo necesitas $50.000 de inscripción.",
+    "fuerza": "media"
+  },
+  {
+    "id": "amenaza",
+    "nombre": "Amenaza",
+    "descripcion": "Amenaza con embargo, multa, captura o bloqueo si no actúa de inmediato.",
+    "senales": ["será embargado", "orden de captura", "multa de", "proceso judicial", "será bloqueado"],
+    "ejemplo": "Por deuda pendiente con la DIAN se procederá al embargo de sus cuentas en 24 horas.",
+    "fuerza": "fuerte"
+  },
+  {
+    "id": "secreto",
+    "nombre": "Secreto",
+    "descripcion": "Pide que no le cuente a nadie para aislar a la víctima.",
+    "senales": ["no le cuentes", "es confidencial", "no se lo digas a nadie", "solo entre nosotros"],
+    "ejemplo": "Por favor no le cuentes a tu papá, es una sorpresa y necesito que me ayudes ahorita.",
+    "fuerza": "media"
+  },
+  {
+    "id": "cambio_de_canal",
+    "nombre": "Cambio de canal",
+    "descripcion": "Pide continuar en otro número, app o plataforma diferente al canal oficial.",
+    "senales": ["escríbeme a este número", "continúe por este WhatsApp", "siga el proceso aquí"],
+    "ejemplo": "Para continuar el proceso de verificación escríbame al +57 300 000 0010.",
+    "fuerza": "media"
+  },
+  {
+    "id": "pago_anticipado",
+    "nombre": "Pago anticipado",
+    "descripcion": "Préstamo, subsidio o beneficio que exige pagar una cuota inicial antes de recibirlo.",
+    "senales": ["cuota de apertura", "pago inicial", "para activar el préstamo", "gastos notariales"],
+    "ejemplo": "Le aprobamos un crédito de $10.000.000 sin codeudor. Solo pague $200.000 de gastos notariales.",
+    "fuerza": "media"
+  },
+  {
+    "id": "consignacion_por_error",
+    "nombre": "Consignación por error",
+    "descripcion": "Dice haber consignado dinero por error y pide que se lo devuelvan.",
+    "senales": ["le consigné por error", "me equivoqué de número", "devuélvame", "por favor regrese"],
+    "ejemplo": "Disculpe, le consigné $500.000 por error a su cuenta. ¿Podría devolvérmelos?",
+    "fuerza": "fuerte"
+  },
+  {
+    "id": "enlace_disfrazado",
+    "nombre": "Enlace disfrazado",
+    "descripcion": "Incluye un enlace que parece oficial pero lleva a un sitio falso o usa un acortador.",
+    "senales": ["haga clic aquí", "ingrese aquí", "link de pago", "bit.ly", "tinyurl", "cutt.ly"],
+    "ejemplo": "Actualice sus datos en: bancolombia-seguro.co/actualizar",
+    "fuerza": "media"
+  }
+]
