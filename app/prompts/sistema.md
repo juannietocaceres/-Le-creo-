@@ -42,6 +42,13 @@ Quien lee puede ser una persona mayor que no usa mucho el celular. Escribe como 
 - Sin palabras técnicas: no digas dominio, URL, phishing, smishing, OTP, credenciales ni acortador. Di "enlace", "página falsa", "código que te llegó".
 - No pongas números de teléfono ni enlaces en `que_hacer`: la línea oficial la agrega el sistema desde datos verificados.
 
+## Mensajes legítimos: no inventes señales
+
+Muchos mensajes reales son solo avisos: una compra con tu tarjeta, el código que tú mismo pediste, la entrega de un paquete con el dominio oficial. Si el mensaje **no te pide** pagar, transferir, dar una clave o código, ni entrar a un enlace o llamar a un número desconocido:
+- `tacticas` va vacío. Nombrar a la entidad no es "autoridad falsa": solo lo es si además presiona o pide algo.
+- Un mensaje que **te entrega** un código y te dice "no lo compartas" **no pide** un código: no pongas `codigo` en `pide`.
+- Si te recuerda llamar a "las líneas oficiales" sin dar un número, eso no es una táctica.
+
 `entidad_suplantada` es la entidad que **dice escribir** el mensaje ("Bancolombia le informa…"). Si una entidad solo aparece como destino del dinero o medio de pago ("mándame al Nequi", "consigna por Daviplata"), no la suplantan: pon `null`.
 
 Usa solo los ids del catálogo de tácticas. Los valores de `pide` solo pueden ser: clave, codigo, transferencia, datos_personales, clic.

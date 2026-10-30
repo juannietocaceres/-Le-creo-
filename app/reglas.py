@@ -23,6 +23,10 @@ _TACTICAS_FUERTES = {
 }
 
 
+def _digitos(texto: str) -> str:
+    return "".join(c for c in texto if c.isdigit())
+
+
 def calcular_semaforo(
     contrato: ContratoSalida,
     herramientas: list[LlamadaHerramienta],
@@ -39,11 +43,14 @@ def calcular_semaforo(
 
     # ── Señales de las herramientas ───────────────────────────────────────────
 
-    _canal_encontrado = False
+    canal: dict | None = None
+    enlaces_no_oficiales: list[str] = []
     for h in herramientas:
         r = h.resultado if isinstance(h.resultado, dict) else {}
 
         if h.nombre == "revisar_enlace":
+            if r.get("dominio") and not r.get("es_oficial"):
+                enlaces_no_oficiales.append(r["dominio"])
             if r.get("imita_a"):
                 senales_duras.append(f"enlace imita a {r['imita_a']}: {r.get('dominio', '')}")
             elif r.get("es_acortador"):
@@ -57,7 +64,7 @@ def calcular_semaforo(
 
         elif h.nombre == "canal_oficial":
             if r.get("encontrada"):
-                _canal_encontrado = True
+                canal = r
 
     # ── Señales del contrato ──────────────────────────────────────────────────
 
@@ -68,11 +75,17 @@ def calcular_semaforo(
         elif item == "transferencia":
             senales_blandas.append("pide transferencia")
 
-    # Suplantación con canal verificado → dura
-    if contrato.entidad_suplantada and _canal_encontrado:
-        senales_duras.append(
-            f"suplanta a {contrato.entidad_suplantada} pero el canal no coincide con el oficial"
-        )
+    # Dice ser una entidad conocida pero da un enlace o un teléfono que no son los suyos → dura.
+    # Es una comparación de datos, no un juicio del modelo: un aviso real del banco que no trae
+    # contacto, o que trae su dominio oficial, no cae aquí.
+    if contrato.entidad_suplantada and canal:
+        oficiales = _digitos(canal.get("canales", ""))
+        telefonos_ajenos = [t for t in contrato.telefonos if _digitos(t) and _digitos(t) not in oficiales]
+        ajenos = enlaces_no_oficiales + telefonos_ajenos
+        if ajenos:
+            senales_duras.append(
+                f"dice ser {contrato.entidad_suplantada} pero da un contacto que no es el oficial: {', '.join(ajenos)}"
+            )
 
     # Tácticas fuertes
     tacticas_fuertes_detectadas = [

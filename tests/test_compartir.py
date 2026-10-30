@@ -27,6 +27,10 @@ ROJO = ResultadoAgente(
     herramientas=[LlamadaHerramienta(
         nombre="canal_oficial", parametros={"entidad": "Bancolombia"}, latencia_ms=1,
         resultado={"encontrada": True, "entidad": "Bancolombia", "canales": "resto del país 01 8000 9 12345"},
+    ), LlamadaHerramienta(
+        nombre="revisar_enlace", parametros={"url": "bancolombia-actualizacion.co"}, latencia_ms=1,
+        resultado={"dominio": "bancolombia-actualizacion.co", "es_oficial": False, "imita_a": "Bancolombia",
+                   "es_acortador": False},
     )],
 )
 
