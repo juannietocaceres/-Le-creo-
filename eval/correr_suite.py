@@ -13,6 +13,7 @@ Guarda el resultado con fecha en eval/resultados/ y deja la traza de cada análi
 """
 from __future__ import annotations
 
+import argparse
 import json
 import statistics
 import sys
@@ -24,7 +25,7 @@ from typing import Any
 RAIZ = Path(__file__).parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from app import agente, config, reglas, trazas
+from app import agente, config, herramientas, reglas, trazas
 from app.contrato import ResultadoAgente
 
 CASOS = RAIZ / "eval" / "casos.jsonl"
@@ -49,6 +50,7 @@ def recuperacion_cumplida(esperada: dict[str, Any], resultado: ResultadoAgente) 
 def evaluar_caso(caso: dict[str, Any], resultado: ResultadoAgente, semaforo: str) -> dict[str, Any]:
     esperado = caso["esperado"]["semaforo"]
     recuperacion = [{"esperada": e, "cumplida": recuperacion_cumplida(e, resultado)} for e in caso.get("recuperacion", [])]
+    necesarias = {e["herramienta"] for e in caso.get("recuperacion", [])}
     return {
         "id": caso["id"],
         "esperado": esperado,
@@ -61,6 +63,8 @@ def evaluar_caso(caso: dict[str, Any], resultado: ResultadoAgente, semaforo: str
         "iteraciones": resultado.iteraciones,
         "herramientas": [{"nombre": h.nombre, "parametros": h.parametros} for h in resultado.herramientas],
         "recuperacion": recuperacion,
+        # D16: herramientas consultadas que el caso no necesitaba (gastan tokens y tiempo)
+        "llamadas_de_mas": [h.nombre for h in resultado.herramientas if h.nombre not in necesarias],
     }
 
 
@@ -69,6 +73,8 @@ def calcular_cifras(registros: list[dict[str, Any]], modelo: str, precios: dict[
     aciertos = sum(r["acierto"] for r in registros)
     esperadas = [x for r in registros for x in r["recuperacion"]]
     cumplidas = sum(x["cumplida"] for x in esperadas)
+    llamadas = sum(len(r["herramientas"]) for r in registros)
+    de_mas = sum(len(r.get("llamadas_de_mas", [])) for r in registros)
 
     precio = precios.get(modelo)
     costo = None
@@ -97,6 +103,12 @@ def calcular_cifras(registros: list[dict[str, Any]], modelo: str, precios: dict[
             "esperadas": len(esperadas),
             "porcentaje": round(100 * cumplidas / len(esperadas), 1) if esperadas else 0.0,
         },
+        "herramientas": {
+            "llamadas_por_caso": round(llamadas / total, 2) if total else 0.0,
+            "de_mas": de_mas,
+            "de_mas_porcentaje": round(100 * de_mas / llamadas, 1) if llamadas else 0.0,
+        },
+        "tokens_por_caso": round(statistics.mean(r["tokens_in"] + r["tokens_out"] for r in registros)) if total else 0,
     }
 
 
@@ -109,41 +121,49 @@ def analizar_con_reintento(texto: str) -> ResultadoAgente:
     return resultado
 
 
-def main(pausa: float = 3) -> int:
+def main(pausa: float = 3, repeticiones: int = 1, etiqueta: str = "") -> int:
     casos = cargar_casos()
     precios = json.loads(PRECIOS.read_text(encoding="utf-8"))
     modelo = config.modelo()
     inicio = datetime.now()
-    print(f"Suite: {len(casos)} casos · {config.PROVEEDOR} / {modelo} · {inicio:%Y-%m-%d %H:%M}\n")
+    print(f"Suite: {len(casos)} casos × {repeticiones} · {config.PROVEEDOR} / {modelo} · "
+          f"{etiqueta or 'sin etiqueta'} · {inicio:%Y-%m-%d %H:%M}\n")
 
     registros = []
-    for i, caso in enumerate(casos):
-        if i and pausa:
-            time.sleep(pausa)
-        resultado = analizar_con_reintento(caso["entrada"])
-        if resultado.ok and resultado.contrato is not None:
-            semaforo, senales = reglas.calcular_semaforo(resultado.contrato, resultado.herramientas)
-        else:
-            semaforo, senales = "error", []
-        trazas.registrar(resultado, semaforo, senales)
-        r = evaluar_caso(caso, resultado, semaforo)
-        registros.append(r)
-        rec = "".join("✓" if x["cumplida"] else "✗" for x in r["recuperacion"]) or "—"
-        print(f"  {r['id']}  {'OK' if r['acierto'] else 'NO'}  obtenido={semaforo:<8} esperado={r['esperado']:<8} "
-              f"recuperación={rec:<3} {r['latencia_ms']:>5} ms"
-              + (f"  ({resultado.error}: {resultado.detalle})" if resultado.error else ""))
+    for rep in range(1, repeticiones + 1):
+        for i, caso in enumerate(casos):
+            if (i or rep > 1) and pausa:
+                time.sleep(pausa)
+            resultado = analizar_con_reintento(caso["entrada"])
+            if resultado.ok and resultado.contrato is not None:
+                semaforo, senales = reglas.calcular_semaforo(resultado.contrato, resultado.herramientas)
+            else:
+                semaforo, senales = "error", []
+            trazas.registrar(resultado, semaforo, senales)
+            r = {**evaluar_caso(caso, resultado, semaforo), "repeticion": rep}
+            registros.append(r)
+            rec = "".join("✓" if x["cumplida"] else "✗" for x in r["recuperacion"]) or "—"
+            de_mas = f" de más: {','.join(r['llamadas_de_mas'])}" if r["llamadas_de_mas"] else ""
+            print(f"  [{rep}] {r['id']}  {'OK' if r['acierto'] else 'NO'}  obtenido={semaforo:<8} esperado={r['esperado']:<8} "
+                  f"recuperación={rec:<3} {r['latencia_ms']:>5} ms{de_mas}"
+                  + (f"  ({resultado.error}: {resultado.detalle})" if resultado.error else ""))
 
     cifras = calcular_cifras(registros, modelo, precios)
     salida = {
         "fecha": inicio.isoformat(timespec="seconds"),
+        "etiqueta": etiqueta,
         "proveedor": config.PROVEEDOR,
         "modelo": modelo,
         "casos": len(casos),
+        "repeticiones": repeticiones,
+        # El texto exacto de las descripciones usadas: cada resultado es reproducible y comparable (D16).
+        "descripciones": {e["function"]["name"]: e["function"]["description"] for e in herramientas.ESQUEMAS},
         "cifras": cifras,
         "registros": registros,
     }
     RESULTADOS.mkdir(parents=True, exist_ok=True)
-    archivo = RESULTADOS / f"{inicio:%Y-%m-%d_%H%M}_{config.PROVEEDOR}.json"
+    sufijo = f"_{etiqueta}" if etiqueta else ""
+    archivo = RESULTADOS / f"{inicio:%Y-%m-%d_%H%M}_{config.PROVEEDOR}{sufijo}.json"
     archivo.write_text(json.dumps(salida, ensure_ascii=False, indent=2), encoding="utf-8")
 
     c = cifras
@@ -155,9 +175,17 @@ def main(pausa: float = 3) -> int:
         print(f"  2. Costo por tarea: sin precio de lista para {modelo} en eval/precios.json")
     print(f"  3. Latencia:       mediana {c['latencia']['mediana_ms']} ms (mín {c['latencia']['min_ms']}, máx {c['latencia']['max_ms']})")
     print(f"  4. Recuperación:   {c['recuperacion']['cumplidas']}/{c['recuperacion']['esperadas']} ({c['recuperacion']['porcentaje']} %)")
+    h = c["herramientas"]
+    print(f"  Herramientas:      {h['llamadas_por_caso']} llamadas por caso · {h['de_mas']} de más ({h['de_mas_porcentaje']} %) "
+          f"· {c['tokens_por_caso']} tokens por caso")
     print(f"\nGuardado en {archivo.relative_to(RAIZ)}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(float(sys.argv[1]) if len(sys.argv) > 1 else 3))
+    parser = argparse.ArgumentParser(description="Suite de evaluación de ¿Le creo? (D15, D16)")
+    parser.add_argument("pausa", nargs="?", type=float, default=3, help="segundos entre casos")
+    parser.add_argument("--repeticiones", type=int, default=1, help="veces que se corre la suite completa")
+    parser.add_argument("--etiqueta", default="", help="nombre de la versión que se mide (p. ej. v1)")
+    args = parser.parse_args()
+    sys.exit(main(args.pausa, args.repeticiones, args.etiqueta))

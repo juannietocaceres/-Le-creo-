@@ -1,0 +1,1254 @@
+{
+  "fecha": "2026-10-30T08:57:32",
+  "etiqueta": "v1",
+  "proveedor": "google",
+  "modelo": "gemini-3.5-flash-lite",
+  "casos": 12,
+  "repeticiones": 3,
+  "descripciones": {
+    "buscar_numero": "Úsala cuando el mensaje traiga un número de teléfono, o cuando el usuario diga desde qué número le escribieron. Normaliza el número a +57 y consulta cuántas veces ha sido reportado. No la uses para números de cuentas bancarias ni para cédulas.",
+    "canal_oficial": "Úsala cuando el mensaje diga venir de un banco, una billetera (Nequi, Daviplata), una transportadora, la DIAN o la Policía. Devuelve cómo contacta de verdad esa entidad y qué nunca pide. No la uses si el mensaje no menciona ninguna entidad.",
+    "revisar_enlace": "Úsala cuando el mensaje contenga un enlace o algo que parezca dirección web. Revisa solo el texto de la URL: si imita un dominio oficial, si usa un acortador o si tiene caracteres engañosos. No abre el enlace ni descarga nada. No la uses si el mensaje no tiene enlaces."
+  },
+  "cifras": {
+    "tasa_exito": {
+      "aciertos": 35,
+      "total": 36,
+      "porcentaje": 97.2
+    },
+    "costo_por_tarea": {
+      "promedio_usd": 0.001636,
+      "total_usd": 0.058902,
+      "costo_real_usd": 0.0,
+      "precio_usado": {
+        "entrada_usd_por_millon": 0.3,
+        "salida_usd_por_millon": 2.5,
+        "nota": "Precio estándar (capa paga). La salida incluye los tokens de razonamiento.",
+        "fuente": "https://ai.google.dev/gemini-api/docs/pricing",
+        "consultado": "2026-10-30"
+      }
+    },
+    "latencia": {
+      "mediana_ms": 6418,
+      "min_ms": 2384,
+      "max_ms": 20107
+    },
+    "recuperacion": {
+      "cumplidas": 34,
+      "esperadas": 36,
+      "porcentaje": 94.4
+    },
+    "herramientas": {
+      "llamadas_por_caso": 1.11,
+      "de_mas": 6,
+      "de_mas_porcentaje": 15.0
+    },
+    "tokens_por_caso": 3854
+  },
+  "registros": [
+    {
+      "id": "c01",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 3281,
+      "tokens_in": 4283,
+      "tokens_out": 361,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Servientrega"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bit.ly/srv-pago3500"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Servientrega"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bit.ly",
+              "es_acortador": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c02",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2702,
+      "tokens_in": 4173,
+      "tokens_out": 236,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000007"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000007",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c03",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2384,
+      "tokens_in": 4229,
+      "tokens_out": 227,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Nequi"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Nequi"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c04",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 6589,
+      "tokens_in": 4189,
+      "tokens_out": 260,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "premios-aniversario-col.net"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "premios-aniversario-col.net",
+              "es_oficial": false
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c05",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 7742,
+      "tokens_in": 4187,
+      "tokens_out": 311,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000009"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000009",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c06",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2547,
+      "tokens_in": 4207,
+      "tokens_out": 239,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": ""
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": ""
+          }
+        }
+      ],
+      "recuperacion": [],
+      "llamadas_de_mas": [
+        "buscar_numero",
+        "revisar_enlace"
+      ],
+      "repeticion": 1
+    },
+    {
+      "id": "c07",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 3858,
+      "tokens_in": 2049,
+      "tokens_out": 126,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": false
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c08",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 3487,
+      "tokens_in": 2008,
+      "tokens_out": 124,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c09",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 5464,
+      "tokens_in": 4133,
+      "tokens_out": 140,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "interrapidisimo.com"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "interrapidisimo.com",
+              "es_oficial": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c10",
+      "esperado": "rechazo",
+      "obtenido": "rechazo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 3810,
+      "tokens_in": 1998,
+      "tokens_out": 37,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c11",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2387,
+      "tokens_in": 4444,
+      "tokens_out": 325,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Bancolombia"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bancolombia-actualizacion.co"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bancolombia-actualizacion.co",
+              "imita_a": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c12",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 5136,
+      "tokens_in": 4312,
+      "tokens_out": 299,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "300 000 0002"
+          }
+        },
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Davivienda"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000002",
+              "peligroso": true
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Davivienda"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 1
+    },
+    {
+      "id": "c01",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 5969,
+      "tokens_in": 4283,
+      "tokens_out": 370,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Servientrega"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bit.ly/srv-pago3500"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Servientrega"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bit.ly",
+              "es_acortador": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c02",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 4424,
+      "tokens_in": 4173,
+      "tokens_out": 241,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000007"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000007",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c03",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 5572,
+      "tokens_in": 4229,
+      "tokens_out": 229,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Nequi"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Nequi"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c04",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2787,
+      "tokens_in": 4189,
+      "tokens_out": 304,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "premios-aniversario-col.net"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "premios-aniversario-col.net",
+              "es_oficial": false
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c05",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 8726,
+      "tokens_in": 4187,
+      "tokens_out": 309,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000009"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000009",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c06",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 7745,
+      "tokens_in": 4207,
+      "tokens_out": 240,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": ""
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": ""
+          }
+        }
+      ],
+      "recuperacion": [],
+      "llamadas_de_mas": [
+        "buscar_numero",
+        "revisar_enlace"
+      ],
+      "repeticion": 2
+    },
+    {
+      "id": "c07",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 11035,
+      "tokens_in": 4353,
+      "tokens_out": 138,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Bancolombia"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c08",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 4036,
+      "tokens_in": 2008,
+      "tokens_out": 109,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c09",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 13650,
+      "tokens_in": 4266,
+      "tokens_out": 162,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "interrapidisimo.com"
+          }
+        },
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Inter Rapidísimo"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "interrapidisimo.com",
+              "es_oficial": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [
+        "canal_oficial"
+      ],
+      "repeticion": 2
+    },
+    {
+      "id": "c10",
+      "esperado": "rechazo",
+      "obtenido": "rechazo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 5164,
+      "tokens_in": 1998,
+      "tokens_out": 51,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c11",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 13009,
+      "tokens_in": 4444,
+      "tokens_out": 325,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Bancolombia"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bancolombia-actualizacion.co"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bancolombia-actualizacion.co",
+              "imita_a": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c12",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 19315,
+      "tokens_in": 4312,
+      "tokens_out": 262,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "300 000 0002"
+          }
+        },
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Davivienda"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000002",
+              "peligroso": true
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Davivienda"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 2
+    },
+    {
+      "id": "c01",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 14148,
+      "tokens_in": 4283,
+      "tokens_out": 365,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Servientrega"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bit.ly/srv-pago3500"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Servientrega"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bit.ly",
+              "es_acortador": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c02",
+      "esperado": "rojo",
+      "obtenido": "error",
+      "acierto": false,
+      "error": "timeout",
+      "latencia_ms": 20107,
+      "tokens_in": 2043,
+      "tokens_out": 25,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000007"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000007",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c03",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 10754,
+      "tokens_in": 4229,
+      "tokens_out": 219,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Nequi"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Nequi"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c04",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 15760,
+      "tokens_in": 4189,
+      "tokens_out": 301,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "premios-aniversario-col.net"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "premios-aniversario-col.net",
+              "es_oficial": false
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c05",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 12178,
+      "tokens_in": 4187,
+      "tokens_out": 308,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000009"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000009",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c06",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 6831,
+      "tokens_in": 2031,
+      "tokens_out": 175,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c07",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 5473,
+      "tokens_in": 2049,
+      "tokens_out": 115,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": false
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c08",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 6915,
+      "tokens_in": 2008,
+      "tokens_out": 109,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c09",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 11823,
+      "tokens_in": 4266,
+      "tokens_out": 167,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "interrapidisimo.com"
+          }
+        },
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Inter Rapidísimo"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "interrapidisimo.com",
+              "es_oficial": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [
+        "canal_oficial"
+      ],
+      "repeticion": 3
+    },
+    {
+      "id": "c10",
+      "esperado": "rechazo",
+      "obtenido": "rechazo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 6248,
+      "tokens_in": 1998,
+      "tokens_out": 51,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c11",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 10312,
+      "tokens_in": 4444,
+      "tokens_out": 327,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Bancolombia"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bancolombia-actualizacion.co"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bancolombia-actualizacion.co",
+              "imita_a": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    },
+    {
+      "id": "c12",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 15460,
+      "tokens_in": 4312,
+      "tokens_out": 266,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "300 000 0002"
+          }
+        },
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Davivienda"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000002",
+              "peligroso": true
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Davivienda"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "repeticion": 3
+    }
+  ]
+}

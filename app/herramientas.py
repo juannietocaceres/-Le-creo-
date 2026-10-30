@@ -142,16 +142,18 @@ def _normalizar_numero(numero: str) -> str:
 
 # ── Esquemas para el agente (OpenAI tool-calling) ────────────────────────────
 
+# Descripciones v2 (D16). La v1, palabra por palabra, está en eval/resultados/*_v1.json.
 ESQUEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
         "function": {
             "name": "buscar_numero",
             "description": (
-                "Úsala cuando el mensaje traiga un número de teléfono, o cuando el usuario "
-                "diga desde qué número le escribieron. Normaliza el número a +57 y consulta "
-                "cuántas veces ha sido reportado. "
-                "No la uses para números de cuentas bancarias ni para cédulas."
+                "Úsala con cada número de teléfono o celular que aparezca escrito en el mensaje, "
+                "aunque venga con espacios o sin +57 (ej. '300 000 0007'), o si la persona dice desde "
+                "qué número le escribieron. Consulta cuántas veces lo han reportado. "
+                "No la uses si el mensaje no trae ningún teléfono, ni con montos de dinero, códigos "
+                "de verificación, números de guía, de cuenta, de tarjeta o de cédula."
             ),
             "parameters": {
                 "type": "object",
@@ -170,10 +172,12 @@ ESQUEMAS: list[dict[str, Any]] = [
         "function": {
             "name": "canal_oficial",
             "description": (
-                "Úsala cuando el mensaje diga venir de un banco, una billetera (Nequi, Daviplata), "
-                "una transportadora, la DIAN o la Policía. Devuelve cómo contacta de verdad esa "
-                "entidad y qué nunca pide. "
-                "No la uses si el mensaje no menciona ninguna entidad."
+                "Úsala siempre que el mensaje diga venir de una entidad o hable en su nombre "
+                "('Bancolombia le informa', 'NEQUI:', 'Servientrega: su paquete'): un banco, una "
+                "billetera, una transportadora, la DIAN o la Policía, sea el mensaje sospechoso o no. "
+                "Devuelve cómo contacta de verdad esa entidad y qué nunca pide. "
+                "No la uses si la entidad solo aparece como el medio donde piden la plata "
+                "('mándame al Nequi'), ni si el mensaje no menciona ninguna entidad."
             ),
             "parameters": {
                 "type": "object",
@@ -192,11 +196,12 @@ ESQUEMAS: list[dict[str, Any]] = [
         "function": {
             "name": "revisar_enlace",
             "description": (
-                "Úsala cuando el mensaje contenga un enlace o algo que parezca dirección web. "
-                "Revisa solo el texto de la URL: si imita un dominio oficial, si usa un acortador "
-                "o si tiene caracteres engañosos. "
+                "Úsala con cada enlace o dirección web que aparezca escrito en el mensaje, aunque no "
+                "empiece por http o www (ej. 'bit.ly/abc', 'pagos-dian.co/pagar'). Revisa solo el texto: "
+                "si imita un dominio oficial, si es un acortador o si tiene caracteres engañosos. "
                 "No abre el enlace ni descarga nada. "
-                "No la uses si el mensaje no tiene enlaces."
+                "No la uses si el mensaje no trae ningún enlace escrito (por ejemplo, si solo dice "
+                "'haz clic aquí' o 'te envío el link'), ni con correos electrónicos."
             ),
             "parameters": {
                 "type": "object",

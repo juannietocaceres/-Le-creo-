@@ -47,6 +47,17 @@ def test_las_cuatro_cifras():
     assert c["costo_por_tarea"]["costo_real_usd"] == 0.0
 
 
+def test_llamadas_de_mas_son_las_herramientas_que_el_caso_no_necesitaba():
+    caso = {"id": "c02", "esperado": {"semaforo": "rojo"},
+            "recuperacion": [{"herramienta": "buscar_numero", "debe": {"numero": "+573000000007"}}]}
+    canal = LlamadaHerramienta(nombre="canal_oficial", parametros={"entidad": "Nequi"}, latencia_ms=1,
+                               resultado={"encontrada": True})
+    r = evaluar_caso(caso, _resultado([_numero("+573000000007", 2), canal]), "rojo")
+    assert r["llamadas_de_mas"] == ["canal_oficial"]
+    c = calcular_cifras([r], "modelo-x", PRECIOS)
+    assert c["herramientas"] == {"llamadas_por_caso": 2.0, "de_mas": 1, "de_mas_porcentaje": 50.0}
+
+
 def test_modelo_sin_precio_no_inventa_costo():
     registros = [evaluar_caso({"id": "a", "esperado": {"semaforo": "verde"}}, _resultado(), "verde")]
     assert calcular_cifras(registros, "modelo-sin-precio", PRECIOS)["costo_por_tarea"] is None
