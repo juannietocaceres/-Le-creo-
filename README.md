@@ -21,7 +21,7 @@ streamlit run ui\app_streamlit.py
 
 ## Compartir desde WhatsApp (para personas mayores)
 
-Página instalable: en Android, la persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → **¿Le creo?** y ve la respuesta en grande. En iPhone se usa el botón "Pegar y revisar".
+Página instalable: en Android, la persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → **¿Le creo?** y ve la respuesta en grande. También acepta **pantallazos**: compartidos desde WhatsApp o con el botón "📷 Revisar una captura". En iPhone se usa "Pegar y revisar" o el botón de captura.
 
 ```powershell
 .\.venv\Scripts\python.exe ui\compartir.py          # http://localhost:8600

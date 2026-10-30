@@ -25,6 +25,10 @@
     <textarea id="texto" rows="5" placeholder="Pega aquí el mensaje que te llegó"></textarea>
     <button id="pegar" type="button" class="grande secundario">📋 Pegar y revisar</button>
     <button id="revisar" type="button" class="grande">Revisar mensaje</button>
+    <label class="grande secundario boton-archivo">
+      📷 Revisar una captura
+      <input id="captura" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+    </label>
   </section>
 
   <section id="espera" hidden>
@@ -33,7 +37,7 @@
   </section>
 
   <section id="resultado" hidden aria-live="polite">
-    <p id="origen" class="origen" hidden>📤 Recibido desde WhatsApp</p>
+    <p id="origen" class="origen" hidden></p>
     <div id="tarjeta" class="tarjeta">
       <p id="orden" class="orden"></p>
       <p id="porque" class="porque"></p>

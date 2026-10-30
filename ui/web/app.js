@@ -47,6 +47,13 @@ function pintar(datos) {
     cuerpo.append(lista("El truco que usan", datos.trucos.map((t) => `${t.nombre}: «${t.evidencia}»`)));
   if (datos.revise && datos.revise.length) cuerpo.append(lista("Qué revisé", datos.revise));
   if (datos.truncado) cuerpo.append(parrafo("El mensaje era muy largo: revisé solo el comienzo."));
+  if (datos.leido) {
+    const h = document.createElement("h2");
+    h.textContent = "Esto es lo que leí en la captura";
+    const p = parrafo(datos.leido);
+    p.className = "leido";
+    cuerpo.append(h, p);
+  }
   $("detalle").hidden = !cuerpo.childElementCount;
   $("detalle").open = false;
 
@@ -73,7 +80,30 @@ async function revisar(texto) {
   }
 }
 
+async function revisarCaptura(archivo) {
+  if (!archivo) return;
+  mostrar("espera");
+  const datos = new FormData();
+  datos.append("imagen", archivo);
+  try {
+    const resp = await fetch("/api/analizar_imagen", { method: "POST", body: datos });
+    pintar(await resp.json());
+  } catch {
+    pintar({ semaforo: "error", lineas: ["⚠️ No pude conectarme. Revisa tu internet e inténtalo de nuevo."] });
+  }
+}
+
+function marcarOrigen(texto) {
+  $("origen").textContent = texto;
+  $("origen").hidden = false;
+}
+
 $("revisar").addEventListener("click", () => revisar($("texto").value));
+
+$("captura").addEventListener("change", (e) => {
+  revisarCaptura(e.target.files[0]);
+  e.target.value = "";   // permite elegir la misma imagen otra vez
+});
 
 $("pegar").addEventListener("click", async () => {
   try {
@@ -95,11 +125,17 @@ $("otro").addEventListener("click", () => {
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 
-// Si llegamos desde el menú Compartir, el servidor dejó el texto incrustado como JSON.
+// Si llegamos desde el menú Compartir, el servidor dejó lo compartido incrustado como JSON:
+// un texto por analizar, o el resultado ya listo de una captura.
 const compartido = JSON.parse($("compartido").textContent);
 if (compartido !== null) {
   history.replaceState(null, "", "/");   // recargar no vuelve a enviar el formulario
-  $("origen").hidden = false;
-  $("texto").value = compartido;
-  revisar(compartido);
+  if (compartido.origen === "imagen") {
+    marcarOrigen("📤 Captura recibida desde WhatsApp");
+    pintar(compartido.resultado);
+  } else {
+    marcarOrigen("📤 Recibido desde WhatsApp");
+    $("texto").value = compartido.texto || "";
+    revisar(compartido.texto);
+  }
 }

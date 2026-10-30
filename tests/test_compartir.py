@@ -100,14 +100,14 @@ def test_compartir_incrusta_el_texto_en_la_pagina(servidor):
     estado, html = _post(servidor + "/compartir", cuerpo, "application/x-www-form-urlencoded")
     assert estado == 200
     dato = re.search(r'<script id="compartido" type="application/json">(.*?)</script>', html).group(1)
-    assert json.loads(dato) == TEXTO
+    assert json.loads(dato) == {"origen": "texto", "texto": TEXTO}
 
 
 def test_compartir_junta_texto_y_url(servidor):
     cuerpo = urllib.parse.urlencode({"text": "Pague aquí", "url": "https://bit.ly/x"}).encode()
     _, html = _post(servidor + "/compartir", cuerpo, "application/x-www-form-urlencoded")
     dato = re.search(r'type="application/json">(.*?)</script>', html).group(1)
-    assert json.loads(dato) == "Pague aquí\nhttps://bit.ly/x"
+    assert json.loads(dato)["texto"] == "Pague aquí\nhttps://bit.ly/x"
 
 
 def test_un_mensaje_con_script_no_puede_inyectar_codigo(servidor):
@@ -117,7 +117,99 @@ def test_un_mensaje_con_script_no_puede_inyectar_codigo(servidor):
     assert "<script>alert(1)" not in html
     assert html.count("<script") == 2, "solo los dos scripts propios de la página"
     dato = re.search(r'type="application/json">(.*?)</script>', html).group(1)
-    assert json.loads(dato) == malicioso
+    assert json.loads(dato)["texto"] == malicioso
+
+
+# ── D11: capturas ─────────────────────────────────────────────────────────────
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 200
+
+
+def _multipart(campos: dict[str, str], imagen: bytes | None, nombre_archivo="captura.png", tipo="image/png"):
+    limite = "----lecreo1234"
+    partes = []
+    for k, v in campos.items():
+        partes.append(f'--{limite}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
+    if imagen is not None:
+        partes.append(
+            f'--{limite}\r\nContent-Disposition: form-data; name="imagen"; filename="{nombre_archivo}"\r\n'
+            f"Content-Type: {tipo}\r\n\r\n".encode() + imagen + b"\r\n"
+        )
+    partes.append(f"--{limite}--\r\n".encode())
+    return b"".join(partes), f"multipart/form-data; boundary={limite}"
+
+
+def _extraido(texto=TEXTO):
+    from app.entradas import TextoExtraido
+    return TextoExtraido(texto=texto, tokens_in=900, tokens_out=60, latencia_ms=800)
+
+
+def test_manifiesto_acepta_imagenes_por_multipart(servidor):
+    _, _, cuerpo = _get(servidor + "/manifest.webmanifest")
+    st = json.loads(cuerpo)["share_target"]
+    assert st["enctype"] == "multipart/form-data"
+    assert st["params"]["files"][0]["name"] == "imagen"
+
+
+def test_compartir_texto_por_multipart_tambien_funciona(servidor):
+    cuerpo, tipo = _multipart({"text": TEXTO}, None)
+    _, html = _post(servidor + "/compartir", cuerpo, tipo)
+    dato = re.search(r'type="application/json">(.*?)</script>', html).group(1)
+    assert json.loads(dato) == {"origen": "texto", "texto": TEXTO}
+
+
+def test_compartir_captura_llega_con_el_resultado_y_traza_tipo_imagen(servidor):
+    cuerpo, tipo = _multipart({"text": ""}, PNG)
+    with patch("app.entradas.texto_de_imagen", return_value=_extraido()) as leer, \
+         patch("app.agente.analizar", return_value=ROJO) as analizar, \
+         patch("app.trazas.registrar") as registrar:
+        _, html = _post(servidor + "/compartir", cuerpo, tipo)
+    leer.assert_called_once_with(PNG)
+    analizar.assert_called_once_with(TEXTO)
+    assert registrar.call_args.kwargs["tipo_entrada"] == "imagen"
+    resultado_registrado = registrar.call_args.args[0]
+    assert resultado_registrado.tokens_in >= 900, "el costo de leer la imagen entra en la traza"
+    dato = json.loads(re.search(r'type="application/json">(.*?)</script>', html).group(1))
+    assert dato["origen"] == "imagen"
+    assert dato["resultado"]["semaforo"] == "rojo"
+    assert dato["resultado"]["leido"] == TEXTO
+
+
+def test_api_analizar_imagen(servidor):
+    cuerpo, tipo = _multipart({}, PNG)
+    with patch("app.entradas.texto_de_imagen", return_value=_extraido()), \
+         patch("app.agente.analizar", return_value=ROJO), patch("app.trazas.registrar"):
+        estado, respuesta_json = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+    datos = json.loads(respuesta_json)
+    assert estado == 200
+    assert datos["lineas"][0] == ORDENES["rojo"]
+    assert datos["leido"] == TEXTO
+
+
+def test_api_imagen_sin_texto_pide_otra_sin_llamar_al_agente(servidor):
+    from app.entradas import EntradaInvalida
+    cuerpo, tipo = _multipart({}, PNG)
+    with patch("app.entradas.texto_de_imagen", side_effect=EntradaInvalida("No pude leer texto en esa imagen.")), \
+         patch("app.agente.analizar") as analizar:
+        _, respuesta_json = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+    analizar.assert_not_called()
+    datos = json.loads(respuesta_json)
+    assert datos["semaforo"] == "error"
+    assert "No pude leer texto" in datos["lineas"][0]
+
+
+def test_api_imagen_sin_archivo(servidor):
+    cuerpo, tipo = _multipart({"text": "hola"}, None)
+    estado, _ = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+    assert estado == 400
+
+
+def test_api_imagen_demasiado_grande(servidor):
+    cuerpo, tipo = _multipart({}, PNG + b"\x00" * (compartir.MAX_CUERPO_IMAGEN + 10))
+    with patch("app.entradas.texto_de_imagen") as leer:
+        estado, _ = _post(servidor + "/api/analizar_imagen", cuerpo, tipo)
+    assert estado == 413
+    leer.assert_not_called()
 
 
 def test_api_devuelve_la_orden_primero_y_guarda_traza(servidor):

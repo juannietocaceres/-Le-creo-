@@ -57,7 +57,14 @@ button.grande {
   color: #fff;
   cursor: pointer;
 }
-button.grande.secundario { background: #fff; color: var(--violeta); border: 2px solid var(--violeta); }
+button.grande.secundario, .boton-archivo { background: #fff; color: var(--violeta); border: 2px solid var(--violeta); }
+.boton-archivo {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 64px; margin-top: 12px; border-radius: 16px;
+  font-size: 1.15rem; font-weight: 700; cursor: pointer;
+}
+.boton-archivo:focus-within { outline: 4px solid #8b5cff; outline-offset: 3px; }
+.leido { white-space: pre-wrap; background: #fff; border: 1px solid #d8d2ea; border-radius: 10px; padding: 10px 12px; font-size: .9rem; }
 button.grande:focus-visible { outline: 4px solid #8b5cff; outline-offset: 3px; }
 button.grande:disabled { opacity: .5; }
 
