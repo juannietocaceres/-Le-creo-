@@ -2,7 +2,7 @@
 
 > Curso: Ingeniería de Aplicaciones con IA — UCC  
 > Equipo: Diego Nieto + Anderson + Angela  
-> Repo: `le-creo` | Fecha: 2026-10-16 · revisada 2026-10-29 (público y canal, ver `decisiones/publico_y_canal.md`)
+> Repo: `le-creo` | Fecha: 2026-10-16 · revisada 2026-10-29 y 2026-10-30 (público y canal, ver `decisiones/publico_y_canal.md`)
 
 ---
 
@@ -10,8 +10,8 @@
 
 **¿Le creo?** le da una segunda opinión sobre un mensaje sospechoso de WhatsApp o SMS **antes de pagar o hacer clic**. Hay dos formas de usarlo:
 
-- **Reenviar el mensaje al bot de Telegram "¿Le creo?"** y recibir la respuesta en el mismo chat. Está pensado para personas mayores: el familiar que las cuida lo configura y les enseña un solo gesto.
-- **Pegar el mensaje en la app web**, que además muestra la traza completa.
+- **Compartir el mensaje desde WhatsApp** (dejar presionado → ⋮ → Compartir → ¿Le creo?) y ver la respuesta corta en grande. Está pensado para personas mayores: el familiar instala la página en su celular Android una vez y le enseña un solo gesto.
+- **Pegar el mensaje** en la misma página (sirve también en iPhone) o en la app web de Streamlit, que además muestra la traza completa.
 
 El agente analiza el mensaje, usa herramientas deterministas para revisar enlaces, números reportados y canales oficiales, y responde con:
 
@@ -36,7 +36,7 @@ El semáforo lo decide una regla de código, no el LLM, para que sea auditable y
 
 ## 3. Fuera de alcance
 
-1. **No se integra directo con WhatsApp ni SMS.** La API de Meta exige número verificado, aprobación de semanas y posible costo por conversación; no cabe en el cronograma ni en el costo cero del curso. El canal de mensajería es Telegram (ver decisión 1).
+1. **No se integra directo con WhatsApp ni SMS.** La API de Meta exige número verificado, aprobación de semanas y posible costo por conversación; no cabe en el cronograma ni en el costo cero del curso. El mensaje llega desde WhatsApp con el menú Compartir de Android, sin integrarse a su API (ver decisión 1).
 2. **No abre ni visita los enlaces del mensaje.** Hacerlo puede descargar malware o confirmarle al estafador que el enlace fue visitado. Solo se analiza el texto de la URL.
 3. **No identifica ni persigue estafadores y no denuncia automáticamente.** Eso le corresponde a la Policía; el sistema solo orienta hacia los canales oficiales de denuncia.
 4. **No da asesoría financiera ni legal, y no recupera dinero.** Son problemas con otra cadena de responsabilidad.
@@ -51,8 +51,8 @@ El semáforo lo decide una regla de código, no el LLM, para que sea auditable y
 ### 4.1 Arquitectura general
 
 ```
-Usuario pega el mensaje en la web  ─┐
-Usuario reenvía el mensaje al bot   ─┴→ texto
+Usuario comparte desde WhatsApp     ─┐
+Usuario pega el mensaje en la web    ─┴→ texto
    → (Fase 2: imagen/audio → extraer texto primero)
    → Agente ReAct (máx. 5 iteraciones)
         ├─ revisar_enlace(url)       — solo reglas, sin LLM
@@ -61,7 +61,7 @@ Usuario reenvía el mensaje al bot   ─┴→ texto
    → Salida JSON validada con pydantic (contrato)
    → reglas.py calcula semáforo      — sin LLM
    → Web: semáforo + tácticas + qué hacer + "qué revisé"
-     Bot: semáforo + qué hacer + tácticas, en un solo mensaje corto
+     Página de compartir: orden + por qué + a quién llamar, en letra grande
    → Traza JSONL + fila en tabla analisis (sin el texto original)
 ```
 
@@ -106,7 +106,7 @@ Usuario reenvía el mensaje al bot   ─┴→ texto
 
 ### 4.6 Stack
 
-Python 3.11 · Streamlit · Telegram Bot API (long polling, solo librería estándar) · PostgreSQL 16 en Docker · SDK `openai` con `base_url` configurable (Google AI Studio / Groq / OpenRouter) · pydantic · pytest
+Python 3.11 · Streamlit · página instalable (PWA con `share_target`) servida con la librería estándar · PostgreSQL 16 en Docker · SDK `openai` con `base_url` configurable (Google AI Studio / Groq / OpenRouter) · pydantic · pytest
 
 ---
 
@@ -122,8 +122,9 @@ Python 3.11 · Streamlit · Telegram Bot API (long polling, solo librería está
 8. **Pregunta que no es un mensaje** ("¿qué cripto compro?") → `fuera_de_alcance = true`, rechazo.
 9. **Captura ilegible o audio vacío (Fase 2)** → pedir de nuevo sin inventar contenido.
 10. **Entidad no en la tabla** → `canal_oficial` devuelve `{encontrada: false}`; la UI muestra que no se pudo verificar el canal.
-11. **Al bot le reenvían una foto, un audio o un sticker sin texto (antes de D11/D12)** → responde que por ahora solo lee texto y cómo copiarlo, sin inventar contenido.
-12. **El texto reenviado trae marcas HTML o caracteres raros** → el bot los escapa antes de responder: el contenido del estafador nunca se interpreta como formato.
+11. **Se comparte algo sin texto (foto o audio, antes de D11/D12)** → la página pide pegar el texto, sin inventar contenido.
+12. **El texto compartido trae HTML o scripts** → se muestra como texto plano: el contenido del estafador nunca se interpreta como código ni como formato.
+13. **Celular iPhone** → no aparece en el menú Compartir; se usa el botón "Pegar y revisar".
 
 ---
 
@@ -141,10 +142,10 @@ Python 3.11 · Streamlit · Telegram Bot API (long polling, solo librería está
 - [ ] Cada análisis deja traza JSONL con herramientas, orden, parámetros, tokens y latencia.
 - [ ] Pego texto en la UI y veo semáforo + tácticas + qué hacer + expander "qué revisé".
 
-### Canal Telegram (D18)
-- [ ] Reenvío un mensaje de la suite al bot desde un celular y recibo el semáforo esperado en el mismo chat.
-- [ ] Cada análisis del bot deja traza JSONL y fila en `analisis`, sin el texto original.
-- [ ] Una foto o un audio sin texto recibe un aviso, no un error.
+### Compartir desde WhatsApp (D20)
+- [ ] En un Android, comparto desde WhatsApp un mensaje de la suite hacia ¿Le creo? y veo el semáforo esperado con la orden primero.
+- [ ] Cada análisis deja traza JSONL y fila en `analisis`, sin el texto original; el texto nunca viaja en la URL.
+- [ ] Un texto con HTML o scripts se muestra como texto plano.
 
 ---
 
@@ -154,7 +155,7 @@ Ver `docs/decisiones/` para el registro completo. Las principales:
 
 | # | Decisión | Elección | Descartado |
 |---|---|---|---|
-| 1 | Canal (revisada 2026-10-29) | Bot de Telegram para reenviar mensajes + app web Streamlit | Bot WhatsApp (API de Meta: aprobación y costo), llamadas IVR (costo) |
+| 1 | Canal (revisada 2026-10-30) | "Compartir con ¿Le creo?" desde WhatsApp (PWA Android) + app web Streamlit | Telegram (cuenta nueva cuesta $5.000 en Colombia), WhatsApp Cloud API (solo números registrados, token de 24 h), llamadas IVR (costo) |
 | 1b | Público objetivo | El familiar que cuida configura; la persona mayor solo reenvía | Que la persona mayor use la web sola |
 | 2 | Entradas Fase 1 | Solo texto | Imagen y audio (van en Fase 2) |
 | 3 | Respuesta | Semáforo + tácticas con evidencia + qué hacer + fuentes | Un solo "es estafa / no es" |

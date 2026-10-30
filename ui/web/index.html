@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#140a2b">
+<title>¿Le creo?</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icono-192.png">
+<link rel="apple-touch-icon" href="/icono-192.png">
+<link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+<main>
+  <header>
+    <img src="/icono-192.png" alt="" width="56" height="56">
+    <div>
+      <h1>¿Le creo?</h1>
+      <p class="sub">Una segunda opinión antes de pagar</p>
+    </div>
+  </header>
+
+  <section id="entrada">
+    <p class="guia">¿Te llegó un mensaje raro? Compártelo desde WhatsApp o pégalo aquí.</p>
+    <textarea id="texto" rows="5" placeholder="Pega aquí el mensaje que te llegó"></textarea>
+    <button id="pegar" type="button" class="grande secundario">📋 Pegar y revisar</button>
+    <button id="revisar" type="button" class="grande">Revisar mensaje</button>
+  </section>
+
+  <section id="espera" hidden>
+    <div class="girando" aria-hidden="true"></div>
+    <p class="guia">Revisando el mensaje…</p>
+  </section>
+
+  <section id="resultado" hidden aria-live="polite">
+    <p id="origen" class="origen" hidden>📤 Recibido desde WhatsApp</p>
+    <div id="tarjeta" class="tarjeta">
+      <p id="orden" class="orden"></p>
+      <p id="porque" class="porque"></p>
+      <p id="accion" class="accion"></p>
+    </div>
+    <details id="detalle">
+      <summary>Ver por qué</summary>
+      <div id="detalle-cuerpo"></div>
+    </details>
+    <button id="otro" type="button" class="grande secundario">Revisar otro mensaje</button>
+  </section>
+
+  <footer>
+    <p>No abro los enlaces y no guardo tus mensajes.</p>
+    <details>
+      <summary>¿Cómo la pongo en el celular?</summary>
+      <ol>
+        <li>Abre esta página en <b>Chrome</b> en un celular Android.</li>
+        <li>Toca los tres puntos ⋮ → <b>Agregar a pantalla de inicio</b> → Instalar.</li>
+        <li>Listo: en WhatsApp deja presionado un mensaje → ⋮ → <b>Compartir</b> → <b>¿Le creo?</b></li>
+      </ol>
+    </details>
+  </footer>
+</main>
+
+<!-- El servidor reemplaza null por el texto compartido, ya escapado como JSON. Es dato, no código. -->
+<script id="compartido" type="application/json">null</script>
+<script src="/app.js"></script>
+</body>
+</html>

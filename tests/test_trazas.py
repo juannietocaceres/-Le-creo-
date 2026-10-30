@@ -40,10 +40,11 @@ def _resultado_ejemplo() -> ResultadoAgente:
     )
 
 
-def test_registrar_crea_fila_en_analisis():
+def test_registrar_crea_fila_en_analisis(tmp_path: Path):
     """registrar() inserta una fila en analisis y devuelve un id > 0."""
     r = _resultado_ejemplo()
-    fila_id = registrar(r, semaforo="rojo", senales=["número peligroso"], tipo_entrada="texto")
+    with patch("app.trazas._TRAZAS_DIR", tmp_path):  # no ensuciar las trazas reales
+        fila_id = registrar(r, semaforo="rojo", senales=["número peligroso"], tipo_entrada="texto")
     assert isinstance(fila_id, int)
     assert fila_id > 0
 

@@ -1,6 +1,7 @@
 # Decisión: público objetivo y canal de entrada
 
 > Fecha: 2026-10-29 · Estado: aceptada por el equipo · Cambia las decisiones 1 (canal) y el público de la spec
+> **Revisión 2026-10-30: Telegram se descarta.** Ver "Revisión: de Telegram a Compartir desde WhatsApp" al final. El público objetivo se mantiene.
 
 ## Contexto
 
@@ -45,3 +46,35 @@ Telegram permite construir y validar la idea **dentro del curso y a costo cero**
 - El bot **no guarda** el texto reenviado ni lo escribe en registros (regla 3).
 - El bot **no abre** los enlaces (regla 1).
 - El bot responde solo a quien le escribe; no envía nada a terceros. Avisar a un familiar es el modo familia, con aprobación (regla 4, Momento 3).
+
+---
+
+## Revisión 2026-10-30: de Telegram a "Compartir desde WhatsApp"
+
+### Qué pasó
+Al crear el bot, Telegram pidió para **registrar una cuenta nueva en Colombia** un "One-time SMS Fee": verificar el número por SMS cuesta una semana de Telegram Premium ($5.000 COP). Lo vimos en la app el 2026-10-30.
+
+Eso rompe dos cosas:
+1. **El costo cero del curso** (regla: solo capas gratuitas sin tarjeta).
+2. **El argumento del público:** la persona mayor, o su familiar, tendría que pagar para usar la herramienta. Es justo la barrera que queríamos quitar.
+
+El bot (`ui/bot_telegram.py`, D18) queda en el repositorio como evidencia del intento, con sus pruebas, pero **no es el canal del producto**.
+
+### Nueva decisión
+**"Compartir con ¿Le creo?" desde WhatsApp (Android).** La persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → elige **¿Le creo?** Se abre nuestra página con el texto ya cargado y le muestra la respuesta corta de D19.
+
+- Técnicamente es una **web instalable (PWA)** con `share_target` en su manifiesto: Android la muestra en el menú Compartir como si fuera una app.
+- El familiar la instala **una sola vez** (Chrome → "Agregar a pantalla de inicio").
+- Verificado en un Android del equipo (2026-10-30): al dejar presionado un mensaje de texto en WhatsApp → ⋮ aparece "Compartir" y abre la lista de apps.
+
+| | Compartir (elegido) | Telegram (descartado) | WhatsApp Cloud API (descartado) |
+|---|---|---|---|
+| Costo | $0, sin cuentas | $5.000 por cuenta nueva en Colombia | $0 en pruebas, pero solo con números registrados a mano |
+| Gesto de la persona mayor | Compartir desde WhatsApp, donde le llega la estafa | Reenviar a otra app que debe instalar | Reenviar a un contacto |
+| Fragilidad | Baja | Baja | Alta: el token de prueba vence en menos de 24 h y necesita un webhook público |
+| iPhone | ❌ no (iOS no permite `share_target` en webs) | ✅ | ✅ |
+
+**Costo de esta decisión:** no funciona en iPhone. En iPhone el gesto es copiar el mensaje y pegarlo en la página, que tiene un botón grande de "Pegar y revisar".
+
+### Privacidad
+El texto compartido llega por **POST**, nunca en la URL, así que no queda en el historial del navegador ni en los registros del servidor (regla 3).

@@ -19,21 +19,25 @@ python scripts\cargar_semillas.py
 streamlit run ui\app_streamlit.py
 ```
 
-## Bot de Telegram (reenviar mensajes)
+## Compartir desde WhatsApp (para personas mayores)
 
-Pensado para personas mayores: el familiar lo configura y la persona solo reenvía el mensaje sospechoso al bot.
-
-1. En Telegram, busca **@BotFather**, escríbele `/newbot` y elige un nombre y un usuario que termine en `bot`.
-2. Copia el token que te da (se ve como `1234567890:AAH…`) y pégalo en `.env` después de `TELEGRAM_BOT_TOKEN=`. Guarda.
-3. Con Docker y Postgres arriba, arranca el bot:
+Página instalable: en Android, la persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → **¿Le creo?** y ve la respuesta en grande. En iPhone se usa el botón "Pegar y revisar".
 
 ```powershell
-.\.venv\Scripts\python.exe ui\bot_telegram.py
+.\.venv\Scripts\python.exe ui\compartir.py          # http://localhost:8600
 ```
 
-4. En Telegram, abre tu bot, escribe `/start` y reenvíale cualquier mensaje sospechoso.
+Para instalarla en un celular hace falta HTTPS. Para la demo sirve un túnel gratuito de Cloudflare (la dirección cambia cada vez que se abre):
 
-El bot solo responde en chats privados, no guarda el texto de los mensajes y permite 3 análisis por minuto por persona.
+```powershell
+cloudflared tunnel --url http://localhost:8600
+```
+
+En el celular: abre la dirección `https://…trycloudflare.com` en Chrome → ⋮ → **Instalar app**.
+
+El texto compartido llega por POST (nunca en la URL), no se guarda y se muestra como texto plano. Hay un límite de 5 análisis por minuto.
+
+> El bot de Telegram (`ui/bot_telegram.py`) se descartó el 2026-10-30: en Colombia crear una cuenta de Telegram cuesta $5.000. Ver `docs/decisiones/publico_y_canal.md`.
 
 ## Tests
 

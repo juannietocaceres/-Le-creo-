@@ -83,25 +83,47 @@ def resumen(r: ResultadoAgente, semaforo: str) -> list[str]:
     return lineas
 
 
-def _que_revise(r: ResultadoAgente) -> list[str]:
+def que_revise(r: ResultadoAgente) -> list[str]:
+    """Qué consultó el agente, en texto plano. Quien lo muestre debe escaparlo."""
     lineas = []
     for h in r.herramientas:
         res = h.resultado if isinstance(h.resultado, dict) else {}
         if h.nombre == "revisar_enlace":
             if res.get("imita_a"):
-                lineas.append(f"el enlace {escape(str(res.get('dominio', '')))} imita a {escape(str(res['imita_a']))}")
+                lineas.append(f"el enlace {res.get('dominio', '')} imita a {res['imita_a']}")
             elif res.get("es_acortador"):
-                lineas.append(f"el enlace {escape(str(res.get('dominio', '')))} es acortado y oculta el destino")
+                lineas.append(f"el enlace {res.get('dominio', '')} es acortado y oculta el destino")
             elif res.get("es_oficial"):
-                lineas.append(f"el enlace {escape(str(res.get('dominio', '')))} es oficial")
+                lineas.append(f"el enlace {res.get('dominio', '')} es oficial")
         elif h.nombre == "buscar_numero" and "reportes" in res:
-            lineas.append(f"el número {escape(str(res.get('numero', '')))} tiene {res['reportes']} reporte(s)")
+            lineas.append(f"el número {res.get('numero', '')} tiene {res['reportes']} reporte(s)")
         elif h.nombre == "canal_oficial":
             if res.get("encontrada"):
-                lineas.append(f"cómo contacta de verdad {escape(str(res.get('entidad', '')))}")
+                lineas.append(f"cómo contacta de verdad {res.get('entidad', '')}")
             else:
-                lineas.append(f"no pude verificar el canal oficial de {escape(str(h.parametros.get('entidad', '')))}")
+                lineas.append(f"no pude verificar el canal oficial de {h.parametros.get('entidad', '')}")
     return lineas
+
+
+def para_web(r: ResultadoAgente, semaforo: str) -> dict:
+    """Resultado para la página de compartir, como datos. La página lo pinta con textContent."""
+    if semaforo == "error" or r.contrato is None:
+        return {"semaforo": "error",
+                "lineas": [MENSAJES_ERROR.get(r.error or "", r.detalle or "No pude revisar el mensaje. Inténtalo de nuevo.")]}
+    if semaforo == "rechazo":
+        return {"semaforo": "rechazo",
+                "lineas": ["Solo reviso mensajes sospechosos de WhatsApp o SMS.",
+                           "Comparte o pega el mensaje que te llegó y te digo si parece estafa."]}
+    c = r.contrato
+    lineas = resumen(r, semaforo)
+    return {
+        "semaforo": semaforo,
+        "lineas": lineas,
+        "ademas": c.que_hacer if c.que_hacer and c.que_hacer not in lineas[-1] else None,
+        "trucos": [{"nombre": t.id.replace("_", " ").capitalize(), "evidencia": t.evidencia} for t in c.tacticas],
+        "revise": que_revise(r),
+        "truncado": r.truncado,
+    }
 
 
 def para_telegram(r: ResultadoAgente, semaforo: str) -> str:
@@ -126,9 +148,9 @@ def para_telegram(r: ResultadoAgente, semaforo: str) -> str:
             f"• {escape(t.id.replace('_', ' ').capitalize())}: <i>«{escape(t.evidencia)}»</i>" for t in c.tacticas
         )
         partes.append(f"🎭 <b>El truco:</b>\n{trucos}")
-    revise = _que_revise(r)
+    revise = que_revise(r)
     if revise:
-        partes.append("🔎 <b>Revisé:</b> " + "; ".join(revise) + ".")
+        partes.append("🔎 <b>Revisé:</b> " + escape("; ".join(revise)) + ".")
     if r.truncado:
         partes.append("<i>El mensaje era muy largo: revisé solo el comienzo.</i>")
 
