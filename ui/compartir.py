@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 from collections import defaultdict, deque
@@ -22,7 +23,9 @@ from urllib.parse import parse_qs
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app import agente, entradas, proveedor, reglas, respuesta, trazas
+from app import agente, aprobacion, db, entradas, herramientas, proveedor, reglas, respuesta, trazas
+
+NUMERO_CO = re.compile(r"\+57\d{10}")
 
 WEB = Path(__file__).parent / "web"
 MAX_CUERPO = 16_000                         # bytes para texto: un mensaje de estafa cabe de sobra
@@ -106,11 +109,35 @@ def analizar(texto: str, tipo_entrada: str = "texto", extra: entradas.TextoExtra
         semaforo, senales = reglas.calcular_semaforo(resultado.contrato, resultado.herramientas)
     else:
         semaforo, senales = "error", []
+    analisis_id = None
     try:
-        trazas.registrar(resultado, semaforo, senales, tipo_entrada=tipo_entrada)
+        analisis_id = trazas.registrar(resultado, semaforo, senales, tipo_entrada=tipo_entrada)
     except Exception as exc:
         print(f"  (no se guardó la traza: {type(exc).__name__})")
-    return respuesta.para_web(resultado, semaforo)
+    datos = respuesta.para_web(resultado, semaforo)
+    if isinstance(analisis_id, int) and semaforo != "error":
+        datos.update(_permisos(analisis_id, resultado, semaforo))
+    return datos
+
+
+def _numeros_del_analisis(resultado) -> list[str]:
+    """Teléfonos colombianos que aparecieron en este análisis (consultados o leídos en el mensaje)."""
+    candidatos = [h.resultado.get("numero", "") for h in resultado.herramientas
+                  if h.nombre == "buscar_numero" and isinstance(h.resultado, dict)]
+    if resultado.contrato:
+        candidatos += [herramientas._normalizar_numero(t) for t in resultado.contrato.telefonos]
+    return sorted({n for n in candidatos if NUMERO_CO.fullmatch(n or "")})
+
+
+def _permisos(analisis_id: int, resultado, semaforo: str) -> dict:
+    """Permisos de un solo uso para lo que la persona puede aprobar con un clic (D14)."""
+    datos = {"analisis_id": analisis_id, "permiso_feedback": aprobacion.emitir("feedback", analisis_id)}
+    if semaforo in ("rojo", "amarillo"):
+        datos["reportables"] = [
+            {"numero": n, "permiso": aprobacion.emitir("reportar", analisis_id, n)}
+            for n in _numeros_del_analisis(resultado)
+        ]
+    return datos
 
 
 def analizar_archivo(archivo: bytes, pie: str = "") -> dict:
@@ -142,7 +169,9 @@ class Manejador(BaseHTTPRequestHandler):
         self.send_response(estado)
         self.send_header("Content-Type", tipo)
         self.send_header("Content-Length", str(len(cuerpo)))
-        self.send_header("Cache-Control", "public, max-age=300" if cache else "no-store")
+        # no-cache: el navegador puede guardar el archivo pero lo revalida siempre, así los
+        # celulares no se quedan con una versión vieja de la página después de un cambio.
+        self.send_header("Cache-Control", "no-cache" if cache else "no-store")
         for k, v in SEGURIDAD.items():
             self.send_header(k, v)
         self.end_headers()
@@ -179,6 +208,37 @@ class Manejador(BaseHTTPRequestHandler):
             return False
         self._json(ESPERA, HTTPStatus.TOO_MANY_REQUESTS)
         return True
+
+    # ── Acciones que la persona aprueba con un clic (D14, regla dura 4) ───────────
+    # Sin un permiso válido emitido con el análisis, no se escribe nada en la base.
+
+    def _reportar(self, analisis_id: int, numero: str, permiso: str) -> None:
+        if not NUMERO_CO.fullmatch(numero) or not aprobacion.usar(permiso, "reportar", analisis_id, numero):
+            self._json({"ok": False, "mensaje": "Este reporte no está autorizado o ya se hizo."}, HTTPStatus.FORBIDDEN)
+            return
+        try:
+            total = db.registrar_reporte(numero)
+        except Exception as exc:
+            print(f"  (no se guardó el reporte: {type(exc).__name__})")
+            self._json({"ok": False, "mensaje": "No pude guardar el reporte. Inténtalo más tarde."}, HTTPStatus.SERVICE_UNAVAILABLE)
+            return
+        print(f"  reporte aprobado → total {total}")
+        aviso = "Con 3 reportes aprobados queda en alerta para todos." if total < 3 else "Ya está en alerta: otras personas también lo reportaron."
+        self._json({"ok": True, "reportes": total, "peligroso": total >= 3,
+                    "mensaje": f"Gracias. Este número tiene {total} reporte(s). {aviso}"})
+
+    def _feedback(self, analisis_id: int, usuario_dice: str, permiso: str) -> None:
+        if usuario_dice not in ("era_estafa", "no_era_estafa") or not aprobacion.usar(permiso, "feedback", analisis_id):
+            self._json({"ok": False, "mensaje": "Esta opinión no está autorizada o ya se envió."}, HTTPStatus.FORBIDDEN)
+            return
+        try:
+            db.guardar_feedback(analisis_id, usuario_dice)
+        except Exception as exc:
+            print(f"  (no se guardó el feedback: {type(exc).__name__})")
+            self._json({"ok": False, "mensaje": "No pude guardar tu opinión. Inténtalo más tarde."}, HTTPStatus.SERVICE_UNAVAILABLE)
+            return
+        print(f"  feedback → {usuario_dice}")
+        self._json({"ok": True, "mensaje": "Gracias: tu respuesta nos ayuda a mejorar."})
 
     def do_GET(self) -> None:
         ruta = self.path.split("?")[0]
@@ -235,6 +295,19 @@ class Manejador(BaseHTTPRequestHandler):
             datos = analizar_archivo(archivo)
             print(f"  análisis ({datos.get('tipo', 'archivo')}) → {datos['semaforo']}")
             self._json(datos)
+
+        elif ruta in ("/api/reportar", "/api/feedback"):
+            try:
+                pedido = json.loads(cuerpo or b"{}")
+                analisis_id = int(pedido.get("analisis_id"))
+                permiso = str(pedido.get("permiso", ""))
+            except (json.JSONDecodeError, AttributeError, TypeError, ValueError):
+                self._json({"ok": False, "mensaje": "No entendí la solicitud."}, HTTPStatus.BAD_REQUEST)
+                return
+            if ruta == "/api/reportar":
+                self._reportar(analisis_id, str(pedido.get("numero", "")), permiso)
+            else:
+                self._feedback(analisis_id, str(pedido.get("usuario_dice", "")), permiso)
 
         else:
             self._enviar(404, b"No encontrado", "text/plain; charset=utf-8")

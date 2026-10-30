@@ -233,6 +233,12 @@ def test_compartir_nota_de_voz_llega_con_el_resultado_y_traza_tipo_audio(servido
     assert dato["resultado"]["leido"] == TEXTO
 
 
+@pytest.mark.parametrize("ruta", ["/estilos.css", "/app.js", "/manifest.webmanifest"])
+def test_archivos_se_revalidan_para_no_servir_versiones_viejas(servidor, ruta):
+    _, cabeceras, _ = _get(servidor + ruta)
+    assert cabeceras["Cache-Control"] == "no-cache"
+
+
 def test_manifiesto_acepta_notas_de_voz(servidor):
     _, _, cuerpo = _get(servidor + "/manifest.webmanifest")
     aceptados = json.loads(cuerpo)["share_target"]["params"]["files"][0]["accept"]

@@ -65,9 +65,83 @@ function pintar(datos) {
   }));
   avisos.hidden = !avisos.childElementCount;
   $("reintentar").hidden = !(datos.reintentar && ultimo);
+  pintarAcciones(datos);
 
   mostrar("resultado");
   $("tarjeta").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ── Acciones que la persona aprueba con un clic (D14) ───────────────────────
+// El servidor solo escribe en la base si recibe el permiso de un solo uso que vino con el resultado.
+
+function boton(texto, clase, alHacerClic) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = `boton-chico ${clase || ""}`;
+  b.textContent = texto;
+  b.addEventListener("click", alHacerClic);
+  return b;
+}
+
+function legible(numero) {   // +573000000007 → +57 300 000 0007
+  return numero.replace(/^\+57(\d{3})(\d{3})(\d{4})$/, "+57 $1 $2 $3");
+}
+
+async function enviarAccion(ruta, cuerpo, bloque) {
+  bloque.querySelectorAll("button").forEach((b) => (b.disabled = true));
+  let mensaje;
+  try {
+    const resp = await fetch(ruta, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo),
+    });
+    mensaje = (await resp.json()).mensaje;
+  } catch {
+    mensaje = "No pude conectarme. Inténtalo de nuevo.";
+  }
+  bloque.replaceChildren(parrafo(mensaje));
+}
+
+function bloqueReporte(analisisId, { numero, permiso }) {
+  const bloque = document.createElement("div");
+  bloque.className = "bloque";
+  const inicio = () => {
+    bloque.replaceChildren(
+      parrafo(`¿Te escribieron desde el ${legible(numero)}?`),
+      boton(`🚩 Reportar este número`, "", confirmar),
+    );
+  };
+  const confirmar = () => {
+    bloque.replaceChildren(
+      parrafo(`Vas a sumar un reporte al ${legible(numero)}. Con 3 reportes queda en alerta para todos. ¿Seguro?`),
+      Object.assign(document.createElement("div"), { className: "fila-botones" }),
+    );
+    bloque.lastChild.append(
+      boton("Sí, reportar", "fuerte", () => enviarAccion("/api/reportar", { analisis_id: analisisId, numero, permiso }, bloque)),
+      boton("Cancelar", "", inicio),
+    );
+  };
+  inicio();
+  return bloque;
+}
+
+function bloqueFeedback(analisisId, permiso) {
+  const bloque = document.createElement("div");
+  bloque.className = "bloque";
+  const fila = Object.assign(document.createElement("div"), { className: "fila-botones" });
+  const enviar = (usuario_dice) => enviarAccion("/api/feedback", { analisis_id: analisisId, usuario_dice, permiso }, bloque);
+  fila.append(boton("Sí era estafa", "", () => enviar("era_estafa")), boton("No era estafa", "", () => enviar("no_era_estafa")));
+  bloque.append(parrafo("¿Me equivoqué? Cuéntame qué era en realidad:"), fila);
+  return bloque;
+}
+
+function pintarAcciones(datos) {
+  const acciones = $("acciones");
+  acciones.replaceChildren();
+  if (datos.analisis_id) {
+    for (const r of datos.reportables || []) acciones.append(bloqueReporte(datos.analisis_id, r));
+    if (datos.permiso_feedback) acciones.append(bloqueFeedback(datos.analisis_id, datos.permiso_feedback));
+  }
+  acciones.hidden = !acciones.childElementCount;
 }
 
 let ultimo = null;   // lo último que se revisó, para el botón Reintentar tras un timeout

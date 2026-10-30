@@ -1,4 +1,8 @@
-"""Conexión a Postgres y consultas base. Solo SELECT en tablas de consulta."""
+"""Conexión a Postgres. Las herramientas del agente solo hacen SELECT.
+
+Las únicas escrituras (al final) son las que la persona aprueba con un clic (D14); el agente
+no tiene forma de llamarlas.
+"""
 from __future__ import annotations
 
 import unicodedata
@@ -92,3 +96,30 @@ def canal_oficial(entidad: str) -> dict[str, Any]:
         "fuente_url":    fila[4],
         "verificado_en": str(fila[5]),
     }
+
+
+# ── Escrituras aprobadas por la persona (D14) ─────────────────────────────────
+
+def registrar_reporte(numero: str) -> int:
+    """Suma un reporte aprobado al número y devuelve el total."""
+    with conexion() as conn:
+        fila = conn.execute(
+            """INSERT INTO numeros_reportados (numero, reportes, ultimo_reporte, origen)
+               VALUES (%s, 1, CURRENT_DATE, 'usuario')
+               ON CONFLICT (numero) DO UPDATE
+                 SET reportes = numeros_reportados.reportes + 1, ultimo_reporte = CURRENT_DATE
+               RETURNING reportes""",
+            (numero,),
+        ).fetchone()
+        conn.commit()
+    return fila[0]
+
+
+def guardar_feedback(analisis_id: int, usuario_dice: str) -> None:
+    """'era_estafa' | 'no_era_estafa' para un análisis ya registrado."""
+    with conexion() as conn:
+        conn.execute(
+            "INSERT INTO feedback (analisis_id, usuario_dice) VALUES (%s, %s)",
+            (analisis_id, usuario_dice),
+        )
+        conn.commit()

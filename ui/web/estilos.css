@@ -13,6 +13,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* que ningún display de una clase muestre algo oculto */
 html { font-size: 21px; }
 body {
   margin: 0;
@@ -64,6 +65,16 @@ button.grande.secundario, .boton-archivo { background: #fff; color: var(--violet
   font-size: 1.15rem; font-weight: 700; cursor: pointer;
 }
 .boton-archivo:focus-within { outline: 4px solid #8b5cff; outline-offset: 3px; }
+.acciones { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.bloque { background: #fff; border: 1px solid #d8d2ea; border-radius: 14px; padding: 12px 14px; }
+.bloque p { margin: 0 0 10px; font-size: .95rem; }
+.fila-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+.boton-chico {
+  font: inherit; font-size: .95rem; font-weight: 700; padding: 10px 14px; min-height: 48px;
+  border-radius: 12px; border: 2px solid var(--violeta); background: #fff; color: var(--violeta); cursor: pointer;
+}
+.boton-chico.fuerte { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.boton-chico:disabled { opacity: .5; }
 .avisos { margin: 12px 0 0; padding-left: 20px; color: var(--suave); font-size: .85rem; }
 .avisos li { margin-bottom: 4px; }
 .leido { white-space: pre-wrap; background: #fff; border: 1px solid #d8d2ea; border-radius: 10px; padding: 10px 12px; font-size: .9rem; }
