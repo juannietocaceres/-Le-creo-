@@ -42,7 +42,7 @@
 | D12 | Entrada por audio (Whisper en Groq), también nota de voz reenviada al bot | Diego | ¿Un audio de prueba se transcribe y se analiza? |
 | D13 | Los 3 errores forzados (`FORZAR_ERROR`) | Diego | ¿Los tres se demuestran sin stack trace? |
 | D14 | `reportar_numero` con aprobación real + tabla `feedback` | Diego | ¿Sin clic no se escribe nada en la base? |
-| D15 | `correr_suite.py` + las 4 cifras con fecha en `semana10.md` | Diego | ¿El script imprime las 4 cifras y las guarda con fecha? |
+| D15 | `correr_suite.py` + las 4 cifras con fecha en `semana10.md` | Diego | ¿El script imprime las 4 cifras y las guarda con fecha? — ✅ 2026-10-30 04:40 con Gemini: éxito 12/12, costo equivalente US$ 0,001747, latencia mediana 3.150 ms, recuperación 12/12. Guardado en `eval/resultados/` y `docs/decisiones/semana10.md` (con sus límites: medido en la misma suite que se corrigió) |
 | D16 | Iterar descripciones de herramientas y medir antes/después | Diego | ¿Hay 2 versiones con su tasa de éxito? |
 | D17 | Demo: cambio de proveedor en vivo | Diego | ¿Se cambia el proveedor durante la demo sin tocar código? |
 | C7–C10 | Ver `TAREAS_COMPANERO.md` (Fase 2). En C8 la persona externa es un adulto mayor real, usando el bot | Anderson / Angela | Ver su archivo |

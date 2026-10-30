@@ -1,0 +1,9 @@
+{
+  "gemini-3.5-flash-lite": {
+    "entrada_usd_por_millon": 0.30,
+    "salida_usd_por_millon": 2.50,
+    "nota": "Precio estándar (capa paga). La salida incluye los tokens de razonamiento.",
+    "fuente": "https://ai.google.dev/gemini-api/docs/pricing",
+    "consultado": "2026-10-30"
+  }
+}

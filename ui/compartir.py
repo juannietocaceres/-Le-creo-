@@ -115,6 +115,11 @@ class Manejador(BaseHTTPRequestHandler):
     def _cuerpo(self) -> bytes | None:
         largo = int(self.headers.get("Content-Length") or 0)
         if largo > MAX_CUERPO:
+            # Se descarta el cuerpo (con tope) antes de responder: si no, en Windows la conexión
+            # se corta y el cliente no alcanza a leer el 413.
+            if largo <= 1_000_000:
+                self.rfile.read(largo)
+            self.close_connection = True
             self._json({"semaforo": "error", "lineas": ["El mensaje es demasiado largo para revisarlo."]},
                        HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
             return None
