@@ -57,9 +57,20 @@ function pintar(datos) {
   $("detalle").hidden = !cuerpo.childElementCount;
   $("detalle").open = false;
 
+  const avisos = $("avisos");
+  avisos.replaceChildren(...(datos.avisos || []).map((a) => {
+    const li = document.createElement("li");
+    li.textContent = a;
+    return li;
+  }));
+  avisos.hidden = !avisos.childElementCount;
+  $("reintentar").hidden = !(datos.reintentar && ultimo);
+
   mostrar("resultado");
   $("tarjeta").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+let ultimo = null;   // lo último que se revisó, para el botón Reintentar tras un timeout
 
 async function revisar(texto) {
   texto = (texto || "").trim();
@@ -67,6 +78,7 @@ async function revisar(texto) {
     $("texto").focus();
     return;
   }
+  ultimo = { texto };
   mostrar("espera");
   try {
     const resp = await fetch("/api/analizar", {
@@ -82,6 +94,7 @@ async function revisar(texto) {
 
 async function revisarCaptura(archivo) {
   if (!archivo) return;
+  ultimo = { archivo };
   mostrar("espera");
   const datos = new FormData();
   datos.append("archivo", archivo);
@@ -99,6 +112,11 @@ function marcarOrigen(texto) {
 }
 
 $("revisar").addEventListener("click", () => revisar($("texto").value));
+
+$("reintentar").addEventListener("click", () => {
+  if (ultimo && ultimo.texto) revisar(ultimo.texto);
+  else if (ultimo && ultimo.archivo) revisarCaptura(ultimo.archivo);
+});
 
 $("captura").addEventListener("change", (e) => {
   revisarCaptura(e.target.files[0]);

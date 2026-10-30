@@ -28,24 +28,37 @@ _MODELOS = {
 MAX_ITER:           int = int(os.getenv("MAX_ITER", "5"))
 TIMEOUT_S:          int = int(os.getenv("TIMEOUT_S", "20"))
 PRESUPUESTO_TOKENS: int = int(os.getenv("PRESUPUESTO_TOKENS", "8000"))
-FORZAR_ERROR:       str = os.getenv("FORZAR_ERROR", "")
+# Solo para pruebas y la demo de D13: "" | 429 | timeout | invalida
+FORZAR_ERROR:       str = os.getenv("FORZAR_ERROR", "").split("#")[0].strip().lower()
 DATABASE_URL:       str = os.getenv("DATABASE_URL", "postgresql://lecreo:lecreo@localhost:5433/lecreo")
 TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "").split("#")[0].strip()
 
-
-def base_url() -> str:
-    return _BASES[PROVEEDOR]
-
-
-def api_key() -> str:
-    return _KEYS[PROVEEDOR]
+# Plan B ante un 429 persistente del proveedor principal (sección 11).
+PROVEEDOR_RESPALDO: str = os.getenv("PROVEEDOR_RESPALDO", "groq").split("#")[0].strip().lower()
 
 
-def modelo() -> str:
-    m = _MODELOS[PROVEEDOR]
+def base_url(p: str | None = None) -> str:
+    return _BASES[p or PROVEEDOR]
+
+
+def api_key(p: str | None = None) -> str:
+    return _KEYS[p or PROVEEDOR]
+
+
+def modelo(p: str | None = None) -> str:
+    p = p or PROVEEDOR
+    m = _MODELOS[p]
     if not m:
-        raise ValueError(f"MODELO_{PROVEEDOR.upper()} no está configurado en .env")
+        raise ValueError(f"MODELO_{p.upper()} no está configurado en .env")
     return m
+
+
+def respaldo() -> str | None:
+    """Proveedor de respaldo utilizable: distinto del principal y con llave y modelo."""
+    p = PROVEEDOR_RESPALDO
+    if not p or p == PROVEEDOR or p not in _BASES or not _KEYS.get(p) or not _MODELOS.get(p):
+        return None
+    return p
 
 
 # Notas de voz (D12): la transcripción va por su propio proveedor (Whisper en Groq),

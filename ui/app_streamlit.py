@@ -41,6 +41,8 @@ def _metricas(r: ResultadoAgente) -> str:
 
 
 def _mostrar_que_reviso(r: ResultadoAgente, senales: list[str]) -> None:
+    for aviso in r.avisos:
+        st.caption(f"ℹ️ {_md(aviso)}")
     with st.expander("🔎 Ver qué hizo el agente"):
         st.caption(_metricas(r))
         if not r.herramientas:
@@ -62,6 +64,10 @@ def _mostrar_que_reviso(r: ResultadoAgente, senales: list[str]) -> None:
 
 def _mostrar_error(r: ResultadoAgente) -> None:
     st.error(f"⚠️ {respuesta.MENSAJES_ERROR.get(r.error or '', r.detalle or 'No pudimos analizar el mensaje.')}")
+    if r.error == "contrato_invalido" and r.texto_plano:
+        st.warning("No pudimos verificar este análisis. Esto fue lo que dijo la IA, **sin revisar**:")
+        st.text(r.texto_plano)
+        st.info(f"💡 {respuesta.AVISO_VERDE}")
     if r.error == "timeout":
         st.button("Reintentar", on_click=lambda: st.session_state.update(reintentar=True))
     _mostrar_que_reviso(r, [])

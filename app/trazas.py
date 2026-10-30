@@ -9,6 +9,7 @@ from typing import Any
 
 import psycopg
 
+from app import config
 from app.config import DATABASE_URL
 from app.contrato import ResultadoAgente
 
@@ -67,6 +68,8 @@ def _escribir_jsonl(
         "senales":      senales,
         "ok":           resultado.ok,
         "error":        resultado.error,
+        "avisos":       resultado.avisos,
+        "forzado":      config.FORZAR_ERROR or None,   # D13: separar los errores de prueba de los reales
     }
 
     with archivo.open("a", encoding="utf-8") as f:

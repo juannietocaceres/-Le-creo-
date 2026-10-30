@@ -40,6 +40,8 @@ class ResultadoAgente(BaseModel):
     ok: bool = False
     error: str | None = None          # timeout | iteraciones | presupuesto_agotado | contrato_invalido | proveedor
     detalle: str | None = None        # mensaje legible del error, sin stack trace
+    texto_plano: str | None = None    # contrato inválido tras el reintento: lo que dijo el modelo, sin verificar
+    avisos: list[str] = []            # lo que pasó por el camino (respaldo por 429, reintento de formato)
     truncado: bool = False
     herramientas: list[LlamadaHerramienta] = []
     iteraciones: int = 0

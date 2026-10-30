@@ -99,11 +99,15 @@ def _parsear_contrato(texto: str | None) -> ContratoSalida:
     return ContratoSalida.model_validate(json.loads(texto))
 
 
-def _modelo_seguro() -> str:
+def _modelo_seguro(p: str | None = None) -> str:
     try:
-        return config.modelo()
+        return config.modelo(p)
     except ValueError:
         return ""
+
+
+# Solo para la demo de D13 (FORZAR_ERROR=invalida): primera respuesta final fuera de contrato.
+_RESPUESTA_FORZADA_INVALIDA = "Me parece que es una estafa, mejor no pagues nada."
 
 
 def analizar(texto: str) -> ResultadoAgente:
@@ -112,16 +116,18 @@ def analizar(texto: str) -> ResultadoAgente:
     texto = texto[:MAX_TEXTO]
 
     inicio = time.perf_counter()
-    estado: dict[str, Any] = {"iteraciones": 0, "tokens_in": 0, "tokens_out": 0, "herramientas": []}
+    estado: dict[str, Any] = {"iteraciones": 0, "tokens_in": 0, "tokens_out": 0, "herramientas": [], "avisos": []}
+    sesion: dict[str, str] = {}   # el proveedor puede cambiar al respaldo a mitad del análisis
 
     def terminar(**campos: Any) -> ResultadoAgente:
+        usado = sesion.get("proveedor", config.PROVEEDOR)
         return ResultadoAgente(
             **estado,
             **campos,
             truncado=truncado,
             latencia_ms=int((time.perf_counter() - inicio) * 1000),
-            proveedor_usado=config.PROVEEDOR,
-            modelo_usado=_modelo_seguro(),
+            proveedor_usado=usado,
+            modelo_usado=_modelo_seguro(usado),
         )
 
     mensajes: list[dict[str, Any]] = [
@@ -140,7 +146,7 @@ def analizar(texto: str) -> ResultadoAgente:
         try:
             respuesta = proveedor.responder_con_reintento(
                 mensajes, herramientas=herramientas.ESQUEMAS, timeout=restante,
-                sin_herramientas=forzar_texto,
+                sin_herramientas=forzar_texto, avisos=estado["avisos"], sesion=sesion,
             )
         except proveedor.HerramientaInventada as exc:
             if reintento_contrato_usado:
@@ -178,12 +184,19 @@ def analizar(texto: str) -> ResultadoAgente:
                 })
             continue
 
+        contenido = msg.content
+        if config.FORZAR_ERROR == "invalida" and not reintento_contrato_usado:
+            contenido = _RESPUESTA_FORZADA_INVALIDA
         try:
-            contrato = _parsear_contrato(msg.content)
+            contrato = _parsear_contrato(contenido)
         except (json.JSONDecodeError, ValidationError, ValueError) as exc:
             if reintento_contrato_usado:
-                return terminar(error="contrato_invalido", detalle=str(exc)[:300])
+                # Sección 11: tras el reintento, se muestra el texto del modelo como texto plano,
+                # con aviso de que no se pudo verificar. Sin semáforo: no hay señales confiables.
+                return terminar(error="contrato_invalido", detalle=str(exc)[:300],
+                                texto_plano=(contenido or "").strip()[:600])
             reintento_contrato_usado = True
+            estado["avisos"].append("La primera respuesta no cumplía el formato esperado: se pidió de nuevo.")
             mensajes.append({
                 "role": "user",
                 "content": f"Tu respuesta no cumple el contrato JSON ({exc}). Responde solo con el JSON.",

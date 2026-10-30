@@ -108,12 +108,19 @@ def que_revise(r: ResultadoAgente) -> list[str]:
 def para_web(r: ResultadoAgente, semaforo: str) -> dict:
     """Resultado para la página de compartir, como datos. La página lo pinta con textContent."""
     if semaforo == "error" or r.contrato is None:
-        return {"semaforo": "error",
-                "lineas": [MENSAJES_ERROR.get(r.error or "", r.detalle or "No pude revisar el mensaje. Inténtalo de nuevo.")]}
+        if r.error == "contrato_invalido" and r.texto_plano:
+            # Sección 11: texto plano con aviso. Sin semáforo, porque no hay señales verificadas.
+            lineas = ["⚠️ No pude verificar este análisis: la IA no respondió en el formato esperado.",
+                      f"Esto fue lo que dijo, sin revisar: «{r.texto_plano}»",
+                      f"👉 {AVISO_VERDE}"]
+        else:
+            lineas = [MENSAJES_ERROR.get(r.error or "", r.detalle or "No pude revisar el mensaje. Inténtalo de nuevo.")]
+        return {"semaforo": "error", "lineas": lineas, "reintentar": r.error == "timeout", "avisos": r.avisos}
     if semaforo == "rechazo":
         return {"semaforo": "rechazo",
                 "lineas": ["Solo reviso mensajes sospechosos de WhatsApp o SMS.",
-                           "Comparte o pega el mensaje que te llegó y te digo si parece estafa."]}
+                           "Comparte o pega el mensaje que te llegó y te digo si parece estafa."],
+                "avisos": r.avisos}
     c = r.contrato
     lineas = resumen(r, semaforo)
     return {
@@ -123,6 +130,7 @@ def para_web(r: ResultadoAgente, semaforo: str) -> dict:
         "trucos": [{"nombre": t.id.replace("_", " ").capitalize(), "evidencia": t.evidencia} for t in c.tacticas],
         "revise": que_revise(r),
         "truncado": r.truncado,
+        "avisos": r.avisos,
     }
 
 
