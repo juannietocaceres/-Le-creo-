@@ -181,6 +181,30 @@
   .nunca span { font-size: 17px; padding: 10px 18px; border-radius: 999px; border: 1px dashed rgba(255,255,255,.25); color: var(--niebla); }
   .nunca span::before { content: "✕  "; color: var(--rojo); font-weight: 700; }
 
+  /* Capturas reales dentro del marco del celular */
+  .cel.foto::before { display: none; }
+  .cel.foto .pantalla { padding: 0; background: #f4f1fb; }
+  .cel.foto img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+
+  /* Diapositiva clara: "Lo que ve la persona" (rompe con el fondo oscuro) */
+  .slide.claro { background: linear-gradient(160deg, #fbf9ff 0%, #efe9ff 100%); color: #160c2e; }
+  .slide.claro .chip { color: #5b3fd6; background: rgba(139,92,255,.12); border-color: rgba(139,92,255,.35); }
+  .slide.claro h2 { margin-bottom: 18px; }
+  .slide.claro .niebla { color: #5a5274; }
+  .galeria { display: flex; justify-content: center; align-items: flex-start; gap: 54px; margin-top: 4px; }
+  .pieza { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 250px; }
+  .pieza .cel { width: 206px; height: 384px; border-radius: 36px; padding: 9px; background: #160c2e;
+    box-shadow: 0 30px 60px rgba(40,20,90,.25); border: 0; }
+  .pieza .cel .pantalla { border-radius: 28px; }
+  .slide.claro { padding-top: 46px; }
+  .pieza:nth-child(1) .cel { transform: rotate(-3deg); }
+  .pieza:nth-child(2) .cel { transform: translateY(-12px); }
+  .pieza:nth-child(3) .cel { transform: rotate(3deg); }
+  .pieza p { font-size: 17px; line-height: 1.35; text-align: center; color: #3a3157; }
+  .pieza p b { display: block; font-family: var(--titulo); font-size: 21px; color: #160c2e; margin-bottom: 2px; }
+  .numero { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; margin-right: 6px;
+    font: 700 15px var(--cuerpo); color: #fff; background: var(--c, #8b5cff); vertical-align: 2px; }
+
   .pie { position: absolute; left: 84px; right: 84px; bottom: 24px; display: flex; justify-content: space-between; font-size: 14px; color: rgba(255,255,255,.35); z-index: 3; }
   #barra { position: fixed; left: 0; top: 0; height: 4px; z-index: 5; background: linear-gradient(90deg, var(--rojo), var(--amarillo), var(--verde)); transition: width .4s; }
   #ayuda { position: fixed; right: 18px; bottom: 12px; font-size: 13px; color: rgba(255,255,255,.3); z-index: 5; }
@@ -247,22 +271,36 @@
   <!-- 4 · Solución -->
   <section class="slide" data-c="#8b5cff,#ff2fb9,#21f5a0" style="flex-direction:row; align-items:center; gap:64px">
     <div style="flex:1">
-      <div class="chip">La solución</div>
+      <div class="chip">La solución · pantallazo real de un Android</div>
       <h2>Lo compartes desde WhatsApp.<br><span class="grad">En 3 segundos</span><br>sabes si creerle.</h2>
       <div class="col" style="margin-top:8px">
-        <p><b>📤 Compartir</b> <span class="niebla">· dejas presionado el mensaje → ¿Le creo?</span></p>
+        <p><b>📤 Compartir</b> <span class="niebla">· dejas presionada la nota de voz o la foto → ¿Le creo?</span></p>
         <p><b>🚦 Primero la orden</b> <span class="niebla">· “NO pagues”, grande y claro</span></p>
         <p><b>👉 A quién llamar</b> <span class="niebla">· la línea oficial, verificada</span></p>
         <p><b>🔎 Por qué</b> <span class="niebla">· el truco y lo que revisó, a la vista</span></p>
       </div>
     </div>
-    <div class="cel">
-      <div class="pantalla">
-        <div class="app-top"><div class="semaforo h"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>¿Le creo?</div>
-        <div class="insignia">📤 Recibido desde WhatsApp</div>
-        <div class="veredicto"><b>🔴 NO pagues ni abras enlaces.</b><span>Te asustan con bloquear tu cuenta para llevarte a una página falsa.</span></div>
-        <div class="mini ok"><b>Qué hacer</b>👉 Llama tú a Bancolombia: 01 8000 9 12345</div>
-        <div class="mini"><b>Ver por qué</b><span class="tag">Autoridad falsa</span><span class="tag">Urgencia</span><span class="tag">Enlace disfrazado</span></div>
+    <div class="cel foto">
+      <div class="pantalla"><img src="img/android_nota_de_voz.jpg" alt="Captura real: nota de voz compartida desde WhatsApp, resultado en rojo"></div>
+    </div>
+  </section>
+
+  <!-- 4b · Lo que ve la persona (capturas reales de la app) -->
+  <section class="slide claro" data-c="#8b5cff,#21f5a0,#ff3b6b">
+    <div class="chip">Lo que ve la persona · capturas reales</div>
+    <h2>Grande, corto y <span class="grad">primero la orden</span>.</h2>
+    <div class="galeria">
+      <div class="pieza">
+        <div class="cel foto"><div class="pantalla"><img src="img/app_rojo.jpg" alt="Resultado rojo: NO pagues ni abras enlaces"></div></div>
+        <p><b><span class="numero" style="--c:var(--rojo)">1</span>Qué hacer, ya</b>La orden en rojo y el paso concreto: llamar al número de siempre.</p>
+      </div>
+      <div class="pieza">
+        <div class="cel foto"><div class="pantalla"><img src="img/app_por_que.jpg" alt="Ver por qué: el truco, qué revisó y con qué IA"></div></div>
+        <p><b><span class="numero">2</span>Por qué</b>El truco con la frase que lo prueba, qué revisó y con qué IA.</p>
+      </div>
+      <div class="pieza">
+        <div class="cel foto"><div class="pantalla"><img src="img/app_verde.jpg" alt="Mensaje real del banco: verde con la línea oficial"></div></div>
+        <p><b><span class="numero" style="--c:#13b97a">3</span>Si es real, lo dice</b>Aviso real del banco en verde, con su línea oficial verificada.</p>
       </div>
     </div>
   </section>
@@ -388,7 +426,7 @@
     <div class="ruta">
       <div class="etapa hoy" style="--c:var(--verde)"><div class="cuando">Hoy</div><div class="ico">📤</div><h3>Texto y pantallazo</h3><p>Compartes la captura desde WhatsApp, o copias y pegas el texto, y ves la orden primero y la línea oficial.</p></div>
       <div class="etapa hoy" style="--c:var(--verde)"><div class="cuando">Hoy</div><div class="ico">🎙️</div><h3>Nota de voz</h3><p>Compartes el audio del “familiar”: se transcribe y se analiza igual.</p></div>
-      <div class="etapa" style="--c:var(--amarillo)"><div class="cuando">Fase 2</div><div class="ico">🚩</div><h3>Reportar</h3><p>Marcas un número con tu aprobación; con 3 reportes queda en alerta.</p></div>
+      <div class="etapa hoy" style="--c:var(--verde)"><div class="cuando">Hoy</div><div class="ico">🚩</div><h3>Reportar</h3><p>Con tu clic y un permiso de un solo uso. Con 3 reportes, el número queda en alerta.</p></div>
       <div class="etapa" style="--c:var(--magenta)"><div class="cuando">Momento 3</div><div class="ico">👨‍👩‍👧</div><h3>Modo familia</h3><p>Avisa a alguien de confianza, solo si tú lo apruebas.</p></div>
     </div>
     <div class="nunca"><span>no pide cuentas ni pagos</span><span>no abre enlaces</span><span>no guarda tus mensajes</span><span>no persigue estafadores</span><span>no da consejos financieros</span></div>
