@@ -5,7 +5,8 @@
 param(
     [switch]$SinTunel,
     [switch]$Detener,
-    [string]$Cloudflared = "C:\Users\juand\Electiva\herramientas\cloudflared\cloudflared.exe"
+    # Por defecto busca cloudflared junto al proyecto (..\herramientas\cloudflared) o en el PATH.
+    [string]$Cloudflared = (Join-Path $PSScriptRoot "..\..\herramientas\cloudflared\cloudflared.exe")
 )
 
 $raiz = Split-Path $PSScriptRoot -Parent
@@ -35,7 +36,7 @@ if ($Detener) {
 Paso "Docker"
 $docker = docker info --format "{{.ServerVersion}}" 2>$null
 if (-not $docker) {
-    $exe = "C:\Users\juand\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe"
+    $exe = Join-Path $env:LOCALAPPDATA "Programs\DockerDesktop\Docker Desktop.exe"
     if (-not (Test-Path $exe)) { $exe = "C:\Program Files\Docker\Docker\Docker Desktop.exe" }
     if (Test-Path $exe) { Start-Process $exe; Write-Host "  Abriendo Docker Desktop (puede tardar un par de minutos)..." }
     $fin = (Get-Date).AddMinutes(4)
