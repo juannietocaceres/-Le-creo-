@@ -49,9 +49,46 @@
 
 ---
 
-## FASE 3 — Momento 3 (semanas 12–14)
+## FASE 3 — "Responder por lo construido" · Momento 3 (semanas 12–14)
 
-Prueba de inyección documentada · modelo de amenazas · hardening con antes/después · ficha de gobernanza · modo familia (`avisar_familiar` con aprobación) · respuesta a auditoría cruzada · cifras finales contra línea base.
+> Planeada el 2026-10-31 a partir de la rúbrica del Momento 3 (https://ingenieria-aplicaciones-ia.netlify.app/momento3_rubrica).
+> Pesa **40 %** y es la única entrega que puede **subir** los criterios de los Momentos 1 y 2.
+> Dos frentes: **A** = lo que exige la rúbrica (sin esto se pierden puntos) y **B** = lo que hace que el producto no se sienta básico. Las mismas reglas: costo cero, una tarea a la vez, criterio sí/no con evidencia.
+
+**Terminada cuando:** alguien ajeno al equipo usa la app en vivo sin explicación, existen `docs/seguridad.md`, `docs/gobernanza.md` y `docs/respuesta_auditoria.md` verificables en el código, y las cuatro cifras finales están comparadas contra la línea base en `docs/decisiones.md`.
+
+### A. Obligatorio por la rúbrica
+
+| ID | Tarea | Dueño | Criterio (sí/no) | Estado |
+|---|---|---|---|---|
+| **S1** ⭐ | Ataque propio: 10–15 inyecciones contra el agente (en texto, **dentro de un pantallazo**, **dicha en una nota de voz**, trucos Unicode, intentar cerrar `</mensaje>` o romper el JSON), corridas con traza | Por asignar | ¿Cada ataque está en `docs/seguridad.md` con su traza, si funcionó o no, y qué se cambió después? | Pendiente |
+| S2 | Modelo de amenazas concreto: la tríada evaluada sobre ¿Le creo? y qué pata cerramos y por qué | Por asignar | ¿`docs/seguridad.md` nombra los activos, entradas y salidas reales del sistema y la decisión tomada? | Pendiente |
+| S3 | Hardening con antes y después: permisos mínimos del usuario de Postgres, límite de peticiones, validación de archivos, CSP, permisos de un solo uso | Por asignar | ¿Cada medida tiene su prueba y una medición antes/después? | Pendiente |
+| G1 | Ficha de gobernanza: las cinco preguntas respondidas con lo que el sistema hace **de verdad** | Por asignar | ¿Cada respuesta enlaza la línea de código que la demuestra (p. ej. `app/aprobacion.py` para la supervisión humana)? | Pendiente |
+| G2 | Respuesta a la auditoría cruzada | Por asignar | ¿Cada hallazgo de `docs/respuesta_auditoria.md` tiene respuesta argumentada ("lo arreglamos" con commit, o "lo asumimos y por qué")? | Espera el reporte del otro equipo |
+| C8 | Prueba con un adulto mayor real (guía: `docs/guias/c8_prueba_adulto_mayor.md`), **después** de B1 | Anderson / Angela | ¿La tabla "Qué tuvimos que explicar / Qué cambiamos" de `semana09.md` está llena? | Pendiente |
+| C5 | Casos reales: reemplazar o ampliar los 12 casos inventados con mensajes reales anonimizados | Anderson | ¿`eval/casos.jsonl` tiene casos reales verificados a mano, con números ficticios? | Pendiente |
+| M1 | Cifras finales con los casos reales, comparadas contra la línea base de la semana 10 | Por asignar | ¿`docs/decisiones.md` muestra las cuatro cifras finales al lado de la línea base, con fecha y qué cambió y por qué? | Pendiente |
+| M2 | Pendientes de medición: suite completa con Groq (pausa de 65 s) y probar un modelo más barato | Por asignar | ¿Hay un resultado guardado en `eval/resultados/` para cada uno? | Pendiente |
+
+### B. Producto: que no se sienta básico
+
+| ID | Tarea | Dueño | Criterio (sí/no) | Estado |
+|---|---|---|---|---|
+| **B1** ⭐ | Rediseño visual de la app: identidad de marca, semáforo que se "enciende", mensajes mientras analiza ("Revisando el número…", "Mirando el enlace…"), íconos por táctica, modo oscuro; sin perder letra grande ni contraste | Por asignar | ¿Hay capturas antes/después y las pruebas de la UI siguen pasando? | Pendiente |
+| B2 | 🔊 Leer la respuesta en voz alta (síntesis de voz del navegador, sin costo) | Por asignar | ¿Un botón "Escuchar" lee la orden y el paso en español en un Android real? | Pendiente |
+| B3 | 📞 Botón "Llamar a la línea oficial" (`tel:` con el número verificado de la base) | Por asignar | ¿En el celular abre el marcador con la línea oficial correcta, y solo aparece si el número viene de la tabla verificada? | Pendiente |
+| B4 | 👨‍👩‍👧 Modo familia: con 🔴, "¿Avisarle a tu hijo?" abre WhatsApp con el aviso ya escrito (`wa.me`), y la persona toca Enviar | Por asignar | ¿Nada se envía sin el toque de la persona, y el aviso **no incluye** el texto del mensaje original? | Pendiente |
+| B5 | 🌐 Link fijo: publicar en una capa gratuita **sin tarjeta** para no reinstalar cada vez | Por asignar | ¿Se verificó que el servicio es gratis sin tarjeta y la app instalada sigue funcionando al día siguiente? | Por verificar (si no hay opción sin tarjeta, se descarta y se documenta) |
+| B6 | 📊 Panel para la familia: números más reportados de la semana y estafas frenadas, con datos agregados | Por asignar | ¿Muestra solo agregados de la base, sin ningún texto de mensajes? | Pendiente |
+
+### Orden propuesto
+
+1. **Semana 12:** B1 + B2 + B3. Es lo que más cambia la impresión, y C8 debe hacerse con la versión nueva.
+2. **Semanas 12–13:** S1 → S2 → S3 y B4. B4 suma también a gobernanza, porque el toque de la persona **es** la supervisión humana.
+3. **Semanas 13–14:** G1, C8, C5 → M1, G2 (cuando llegue la auditoría), M2 y B5/B6 si queda tiempo.
+
+**Preguntas que hay que poder responder en la semana 14** (de la rúbrica): que alguien del público la use sin explicación · ¿es lo que declaramos en la spec? · el ataque que probamos y qué pasó · qué pata de la tríada cerramos · la línea donde el sistema exige la supervisión humana · si causa un daño hoy, ¿qué hacemos? · cifras contra la semana 10 · la traza de un caso que falla · qué haríamos distinto desde la semana 1.
 
 ---
 
