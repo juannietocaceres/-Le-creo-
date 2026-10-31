@@ -65,6 +65,9 @@ def evaluar_caso(caso: dict[str, Any], resultado: ResultadoAgente, semaforo: str
         "recuperacion": recuperacion,
         # D16: herramientas consultadas que el caso no necesitaba (gastan tokens y tiempo)
         "llamadas_de_mas": [h.nombre for h in resultado.herramientas if h.nombre not in necesarias],
+        # Lo que escribió el modelo (los casos son ficticios), para revisar el tono: p. ej. "robes" por "roben"
+        "explicacion": resultado.contrato.explicacion if resultado.contrato else None,
+        "que_hacer": resultado.contrato.que_hacer if resultado.contrato else None,
     }
 
 

@@ -85,3 +85,50 @@ Esta es la **línea base**. En D16 se iteran las descripciones de las herramient
 6. **Costo:** la v2 cuesta un 11 % más por las descripciones más largas y las consultas de canal adicionales.
 
 **Decisión:** se queda la **v2**, porque mejora la recuperación, que es el propósito de las descripciones, a cambio de un 11 % más de costo equivalente. Pendientes: agregar `canal_oficial` a la expectativa de c09, atacar c06 desde el prompt y corregir el "robes".
+
+---
+
+## D16 (cierre) — Prompt de sistema: v3, v4 y v5
+
+> Medido el **2026-10-31** (v3 11:40, v4 11:45, v5 11:49) · `gemini-3.5-flash-lite` · 3 repeticiones × 12 casos
+> Resultados: `eval/resultados/2026-10-31_1140_google_v3.json`, `…_1145_google_v4.json`, `…_1149_google_v5.json`
+> Desde v3 la suite guarda también la `explicacion` y el `que_hacer` del modelo, para revisar el tono.
+
+### Antes de medir
+
+- **c09 corregido en la suite:** su expectativa ahora incluye `canal_oficial` → Inter Rapidísimo, que la v2 pide a propósito. Con esa expectativa, la v2 tenía **3 llamadas de más de 42, todas en c06**. Esa es la línea base.
+- **Causa de c06**, leída en las trazas de la v2: la IA llamaba `buscar_numero` con **"$300.000"** (un monto) y `canal_oficial` con **"agencia de marketing"** (una descripción, no una entidad). El prompt decía "usa las herramientas disponibles antes de concluir", que empuja a llamar algo siempre.
+
+### Qué se cambió en cada versión (solo el prompt)
+
+| Versión | Cambio |
+|---|---|
+| v3 | Se quita "usa las herramientas antes de concluir". `canal_oficial` solo con entidades **con nombre propio**; "un monto, un código o una guía no son teléfonos"; si no hay nada verificable, no llamar herramientas. |
+| v4 | v3 + "si trae algo verificable, consúltalo **aunque te parezca oficial**; nunca digas que algo es oficial sin consultarlo". El tono pasa de prohibir "robes" a dar el modelo correcto: "para robarte", "para quitarte la plata". |
+| v5 | v4 **sin** la línea "si no hay nada verificable, no llames herramientas". |
+
+### Resultado
+
+| | v2 (línea base) | v3 | v4 | **v5** |
+|---|---|---|---|---|
+| Tasa de éxito | 36/36 | 36/36 | 36/36 | **36/36** |
+| Recuperación | 39/39 * | 37/39 | 35/39 | **39/39** |
+| Llamadas de más | 3 (c06) | 0 | 0 | **0** |
+| c09 sin consultar nada | 0/3 | 1/3 | 2/3 | **0/3** |
+| "robes" en las explicaciones | sin dato † | 1 (c12) | 0 | **0** |
+| Tokens por caso | 4.381 | 4.277 | 4.290 | 4.367 |
+| Costo equivalente por caso | US$ 0,001812 | US$ 0,001779 | US$ 0,001791 | US$ 0,001805 |
+| Latencia mediana | 5.234 ms | 2.272 ms | 2.214 ms | 2.224 ms |
+
+\* Recalculada con la expectativa nueva de c09: la v2 consultó el canal de Inter Rapidísimo con el nombre exacto en las 3 corridas, pero la v2 no guardaba el resultado de la herramienta, así que se infiere por los parámetros.
+† La v2 no guardaba las explicaciones.
+
+### Lectura
+
+1. **La línea "si no hay nada que verificar, no llames herramientas" fue un error:** le dio al modelo una salida para no verificar mensajes que *parecen* legítimos. En c09 respondió "usa el enlace oficial" sin haberlo consultado (v3: 1/3, v4: 2/3). El semáforo salió verde igual, pero afirmaba una verificación que no hizo. Al quitarla (v5), c09 volvió a 3/3 y c06 siguió en 0 llamadas: lo que arregló c06 fueron las aclaraciones concretas (monto ≠ teléfono, descripción ≠ entidad), no la regla general.
+2. **"robes":** al dejar de citar la forma incorrecta y dar la correcta, desapareció en 72 explicaciones (v4 y v5).
+3. **Costo:** prácticamente igual a la v2 (−0,4 %).
+4. **Latencia:** el día 31 Gemini respondió más rápido que el 30; no se le atribuye al cambio.
+5. **Límite:** sigue siendo la misma suite de 12 casos inventados; el 100 % muestra que se corrigieron los fallos observados, no que el sistema generalice. La prueba de fondo son los casos reales de C5.
+
+**Decisión:** se queda la **v5** del prompt con la **v2** de las descripciones de las herramientas.
