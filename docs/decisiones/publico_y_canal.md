@@ -78,3 +78,21 @@ El bot (`ui/bot_telegram.py`, D18) queda en el repositorio como evidencia del in
 
 ### Privacidad
 El texto compartido llega por **POST**, nunca en la URL, así que no queda en el historial del navegador ni en los registros del servidor (regla 3).
+
+## Prueba real en Android (2026-10-31)
+
+Probado en un Xiaomi (HyperOS) con WhatsApp, usando la app instalada desde Chrome por el túnel de Cloudflare.
+
+### Lo que funcionó
+- **Nota de voz:** WhatsApp → mantener presionada → Compartir → **¿Le creo?** abre la app directamente. El servidor registró `POST /compartir` (el audio va en el cuerpo, no en la URL), Whisper transcribió y el resultado fue **🔴** con "📤 Nota de voz recibida desde WhatsApp" y la orden primero (traza #508, `tipo_entrada=audio`, sin el texto). Pantallazo: `docs/evidencia/d20_android_nota_de_voz.jpg`.
+- **Mensaje de texto:** Copiar → abrir ¿Le creo? → "Pegar y revisar" → 🔴.
+
+### Lo que encontramos
+1. **WhatsApp en Android no ofrece "Compartir" para mensajes de texto**, solo para notas de voz, fotos y documentos. El menú ⋮ de un texto trae Copiar, Fijar, Meta AI, Traducir y Reportar. Para texto el camino es de dos gestos: copiar y pegar. Esto explica por qué en las pruebas del 30 de octubre "el texto llegaba escrito" pero el servidor nunca vio un `POST /compartir`.
+2. **La app no aparecía en el menú Compartir** aunque estaba instalada como app (WebAPK, "Versión: 1"). La causa era la lista de tipos del manifiesto: WhatsApp puede etiquetar la nota de voz como `audio/ogg; codecs=opus` y Android oculta la app si el tipo no coincide. Se cambió a `image/*` y `audio/*`. El servidor sigue validando el formato real por su contenido. Hay que **reinstalar** la app para que Android lea el manifiesto nuevo.
+3. El primer envío falló en el paso de Gemini (no en Whisper), al parecer por una falla transitoria. Ahora el registro del servidor anota el código y el mensaje del proveedor cuando un análisis falla, sin el texto.
+
+### Qué cambia para el público objetivo
+- Para la persona mayor, el gesto que más se parece a lo que ya hace ("reenviárselo al nieto") existe **para audios y pantallazos**. Para los textos son dos gestos (Copiar → Pegar y revisar).
+- La instalación la hace un familiar, una vez. Eso refuerza la decisión de que el usuario real es la pareja persona mayor + familiar que cuida.
+- La prueba con un adulto mayor real (C8) debe medir los dos caminos por separado: compartir una nota de voz o un pantallazo, y copiar y pegar un texto.

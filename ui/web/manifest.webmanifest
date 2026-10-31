@@ -22,9 +22,7 @@
       "url": "url",
       "files": [{
         "name": "archivo",
-        "accept": ["image/png", "image/jpeg", "image/webp",
-                   "audio/ogg", "audio/opus", "audio/mpeg", "audio/mp4", "audio/aac", "audio/wav", "audio/webm",
-                   ".opus", ".ogg", ".m4a", ".mp3"]
+        "accept": ["image/*", "audio/*", ".opus", ".ogg", ".m4a", ".mp3", ".png", ".jpg", ".jpeg", ".webp"]
       }]
     }
   }

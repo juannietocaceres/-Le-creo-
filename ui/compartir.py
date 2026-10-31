@@ -109,6 +109,8 @@ def analizar(texto: str, tipo_entrada: str = "texto", extra: entradas.TextoExtra
         semaforo, senales = reglas.calcular_semaforo(resultado.contrato, resultado.herramientas)
     else:
         semaforo, senales = "error", []
+        # Solo el código y el mensaje del proveedor (nunca el texto analizado), para diagnosticar.
+        print(f"  error del análisis: {resultado.error} · {resultado.detalle or '—'}")
     analisis_id = None
     try:
         analisis_id = trazas.registrar(resultado, semaforo, senales, tipo_entrada=tipo_entrada)

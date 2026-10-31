@@ -242,7 +242,9 @@ def test_archivos_se_revalidan_para_no_servir_versiones_viejas(servidor, ruta):
 def test_manifiesto_acepta_notas_de_voz(servidor):
     _, _, cuerpo = _get(servidor + "/manifest.webmanifest")
     aceptados = json.loads(cuerpo)["share_target"]["params"]["files"][0]["accept"]
-    assert "audio/ogg" in aceptados and ".opus" in aceptados
+    # Comodines: WhatsApp puede etiquetar la nota de voz como "audio/ogg; codecs=opus" y Android
+    # esconde la app si el tipo no coincide. El servidor igual valida el contenido real.
+    assert "audio/*" in aceptados and "image/*" in aceptados and ".opus" in aceptados
 
 
 def test_api_devuelve_la_orden_primero_y_guarda_traza(servidor):

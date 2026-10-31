@@ -23,7 +23,7 @@ streamlit run ui\app_streamlit.py
 
 ## Compartir desde WhatsApp (para personas mayores)
 
-Página instalable: en Android, la persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → **¿Le creo?** y ve la respuesta en grande. También acepta **pantallazos y notas de voz**: compartidos desde WhatsApp o con el botón "📷 🎙️ Revisar captura o audio". Las notas de voz se transcriben con Whisper en Groq (`MODELO_TRANSCRIPCION` en `.env`). En iPhone se usa "Pegar y revisar" o el botón.
+Página instalable: en Android, la persona deja presionado el mensaje sospechoso en WhatsApp → ⋮ → **Compartir** → **¿Le creo?** y ve la respuesta en grande. También acepta **pantallazos y notas de voz**: compartidos desde WhatsApp o con el botón "📷 🎙️ Revisar captura o audio". Las notas de voz se transcriben con Whisper en Groq (`MODELO_TRANSCRIPCION` en `.env`). En iPhone se usa "Pegar y revisar" o el botón. **Ojo:** WhatsApp en Android solo deja *compartir* notas de voz, fotos y documentos; un mensaje de **texto** se copia y se revisa con "Pegar y revisar". Si se cambia el manifiesto, hay que reinstalar la app en el celular.
 
 ```powershell
 .\.venv\Scripts\python.exe ui\compartir.py          # http://localhost:8600
