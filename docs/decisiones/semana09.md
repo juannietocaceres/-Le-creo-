@@ -30,6 +30,8 @@ En capa gratuita el costo real es **US$ 0**. El costo equivalente medido en la s
 
 Una persona de otro equipo (idealmente un adulto mayor) usa la app sin explicación. Se anota todo lo que hubo que explicarle y qué se cambió.
 
+**Cómo hacerla:** `docs/guias/c8_prueba_adulto_mayor.md` (preparación, 4 tareas: audio, pantallazo, texto y mensaje legítimo; pistas por niveles y hoja de registro).
+
 | Qué tuvimos que explicar | Qué cambiamos |
 |---|---|
 | *(pendiente)* | *(pendiente)* |
