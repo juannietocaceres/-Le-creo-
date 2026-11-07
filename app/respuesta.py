@@ -57,6 +57,20 @@ def _canal_verificado(r: ResultadoAgente, semaforo: str) -> dict | None:
     return None
 
 
+def _entidad_de_enlace_oficial(r: ResultadoAgente) -> str | None:
+    """Dueño del primer enlace que revisar_enlace encontró en la tabla de dominios oficiales."""
+    for h in r.herramientas:
+        res = h.resultado if isinstance(h.resultado, dict) else {}
+        if h.nombre == "revisar_enlace" and res.get("es_oficial") and res.get("entidad"):
+            return res["entidad"]
+    return None
+
+
+def _despejado(r: ResultadoAgente, semaforo: str) -> bool:
+    """Verde aunque el modelo vio tácticas: las reglas comprobaron que el enlace es oficial."""
+    return bool(semaforo == "verde" and r.contrato and r.contrato.tacticas and _entidad_de_enlace_oficial(r))
+
+
 def para_llamar(r: ResultadoAgente, semaforo: str) -> dict | None:
     """B3: la línea oficial para el botón "Llamar". Sale de la tabla verificada, nunca del modelo,
     y solo cuando el resumen ya la recomienda (misma regla que `_canal_verificado`)."""
@@ -73,7 +87,11 @@ def resumen(r: ResultadoAgente, semaforo: str) -> list[str]:
     """Las tres líneas para una persona mayor: qué hacer, por qué y a quién llamar. Texto plano."""
     lineas = [ORDENES[semaforo]]
     c = r.contrato
-    if c and c.explicacion:
+    if _despejado(r, semaforo):
+        # Las reglas despejaron lo que el modelo sospechaba: su explicación diría lo contrario.
+        lineas.append(f"El enlace es de {_entidad_de_enlace_oficial(r)} (dominio oficial comprobado) y el mensaje no te pide "
+                      "claves, códigos ni pagos.")
+    elif c and c.explicacion:
         lineas.append(c.explicacion)
 
     canal = _canal_verificado(r, semaforo)
@@ -142,11 +160,13 @@ def _para_web(r: ResultadoAgente, semaforo: str) -> dict:
                 "avisos": r.avisos}
     c = r.contrato
     lineas = resumen(r, semaforo)
+    despejado = _despejado(r, semaforo)  # el consejo y los trucos del modelo contradirían el verde
     return {
         "semaforo": semaforo,
         "lineas": lineas,
-        "ademas": c.que_hacer if c.que_hacer and c.que_hacer not in lineas[-1] else None,
-        "trucos": [{"nombre": t.id.replace("_", " ").capitalize(), "evidencia": t.evidencia} for t in c.tacticas],
+        "ademas": c.que_hacer if c.que_hacer and c.que_hacer not in lineas[-1] and not despejado else None,
+        "trucos": [] if despejado else
+                  [{"nombre": t.id.replace("_", " ").capitalize(), "evidencia": t.evidencia} for t in c.tacticas],
         "revise": que_revise(r),
         "truncado": r.truncado,
         "avisos": r.avisos,
@@ -169,9 +189,10 @@ def para_telegram(r: ResultadoAgente, semaforo: str) -> str:
     accion = resto[-1]
     explicacion = resto[:-1]
     partes = ["\n".join([f"<b>{escape(orden)}</b>", *map(escape, explicacion)]), f"<b>{escape(accion)}</b>"]
-    if c.que_hacer and c.que_hacer not in accion:
+    despejado = _despejado(r, semaforo)
+    if c.que_hacer and c.que_hacer not in accion and not despejado:
         partes.append(f"✅ <b>Además:</b> {escape(c.que_hacer)}")
-    if c.tacticas:
+    if c.tacticas and not despejado:
         trucos = "\n".join(
             f"• {escape(t.id.replace('_', ' ').capitalize())}: <i>«{escape(t.evidencia)}»</i>" for t in c.tacticas
         )

@@ -152,3 +152,23 @@ Detalle: `decisiones/publico_y_canal.md`.
 5. El proveedor solo se llama desde `app/proveedor.py`.
 6. Ningún nombre de modelo ni llave en el código: todo en `.env`.
 7. Semillas solo con números ficticios.
+
+## Enlace oficial comprobado (2026-11-07)
+
+**Qué pasó:** un aviso real de giro de Western Union (enlace `go.wu.com`) salió 🟡. Western Union no estaba en la tabla y el modelo marcó "premio inesperado" y "enlace disfrazado".
+
+**Qué cambió:**
+- **Tabla:** Western Union entró a `dominios_oficiales.csv` (`westernunion.com`, `wu.com`) y a `canales_oficiales.csv`. Se comprobó que `wu.com` redirige a `westernunion.com` y que ambos usan los mismos servidores de nombres.
+- **Regla en `reglas.py`:** si cada enlace del mensaje es de un dominio oficial, el mensaje no trae teléfonos y no pide nada más que abrir el enlace, el resultado es 🟢. Las tácticas que el modelo creyó ver no bastan contra un dato comprobado.
+- **Respuesta:** en ese caso la explicación dice que el enlace es oficial, y no se muestran los trucos ni el consejo del modelo, porque contradirían el verde.
+- **Marcas cortas:** las marcas de menos de 3 letras ya no se buscan dentro de otros dominios. Si no, `wu` marcaría `wuxi.cn` como imitación de Western Union.
+
+**Controles:**
+
+| Mensaje | Resultado |
+|---|---|
+| El mismo giro con `westernunion-giros.xyz` | 🔴 |
+| El mismo giro pidiendo clave y código | 🔴 |
+| Enlace oficial + "paga comisión al Nequi" | 🟡, no se aplica la excepción |
+
+**Suite v6_wu:** 13/13, recuperación 14/14. El caso c13 es el giro real con los datos cambiados.

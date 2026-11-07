@@ -112,3 +112,19 @@ def test_el_boton_nunca_sale_del_modelo():
     r = _resultado(None, que_hacer="Llama al 3001234567 ya mismo.")
     assert para_llamar(r, "rojo") is None
     assert para_web(r, "rojo")["llamar"] is None
+
+
+def test_verde_por_enlace_oficial_no_repite_trucos_ni_consejo_del_modelo():
+    """Giro real de Western Union: el modelo vio 'premio inesperado', las reglas lo despejaron."""
+    from app.contrato import ContratoSalida, LlamadaHerramienta, Tactica
+    from app.agente import ResultadoAgente
+    from app import respuesta
+    c = ContratoSalida(tacticas=[Tactica(id="premio_inesperado", evidencia="Llegaron 150000 COP")],
+                       pide=["clic"], enlaces=["go.wu.com/e/x"],
+                       explicacion="Te inventan una transferencia.", que_hacer="No hagas clic.")
+    h = [LlamadaHerramienta(nombre="revisar_enlace", parametros={}, latencia_ms=0,
+                            resultado={"dominio": "go.wu.com", "es_oficial": True, "entidad": "Western Union"})]
+    r = ResultadoAgente(contrato=c, herramientas=h)
+    web = respuesta.para_web(r, "verde")
+    assert web["trucos"] == [] and web["ademas"] is None
+    assert "Western Union" in web["lineas"][1] and "inventan" not in " ".join(web["lineas"])

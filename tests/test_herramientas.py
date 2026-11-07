@@ -94,3 +94,9 @@ def test_canal_nombre_con_sufijo():
 def test_canal_no_confunde_davivienda_con_daviplata():
     assert canal_oficial("Daviplata")["entidad"] == "Daviplata"
     assert canal_oficial("Davivienda")["entidad"] == "Davivienda"
+
+
+def test_marca_de_dos_letras_no_marca_dominios_ajenos():
+    """'wu' (Western Union) no puede volver sospechoso a cualquier dominio que empiece por 'wu'."""
+    from app.herramientas import _contiene_marca
+    assert not _contiene_marca("wunderlist.com", "wu")

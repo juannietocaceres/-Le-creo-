@@ -45,10 +45,13 @@ def calcular_semaforo(
 
     canal: dict | None = None
     enlaces_no_oficiales: list[str] = []
+    enlaces_oficiales = 0
     for h in herramientas:
         r = h.resultado if isinstance(h.resultado, dict) else {}
 
         if h.nombre == "revisar_enlace":
+            if r.get("es_oficial"):
+                enlaces_oficiales += 1
             if r.get("dominio") and not r.get("es_oficial"):
                 enlaces_no_oficiales.append(r["dominio"])
             if r.get("imita_a"):
@@ -106,6 +109,14 @@ def calcular_semaforo(
 
     if senales_duras:
         return "rojo", senales_duras + senales_blandas
+
+    # Enlace oficial comprobado: si cada enlace del mensaje es de un dominio de la tabla oficial,
+    # no trae teléfonos y no pide nada más que abrir el enlace, las tácticas que el modelo creyó
+    # ver (p. ej. "premio inesperado" en un giro real) no bastan: el dato pesa más que el juicio.
+    if (contrato.enlaces and not enlaces_no_oficiales
+            and enlaces_oficiales >= len(contrato.enlaces)
+            and not contrato.telefonos and set(contrato.pide) <= {"clic"}):
+        return "verde", []
 
     if senales_blandas:
         return "amarillo", senales_blandas

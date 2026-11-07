@@ -34,7 +34,8 @@ def revisar_enlace(url: str) -> dict[str, Any]:
     oficiales = db.dominios_oficiales()
 
     # Exacto o subdominio de un oficial (sucursal.bancolombia.com es de Bancolombia)
-    es_oficial = any(dominio == d or dominio.endswith("." + d) for d, _ in oficiales)
+    dueno = next((e for d, e in oficiales if dominio == d or dominio.endswith("." + d)), None)
+    es_oficial = dueno is not None
     imita_a: str | None = None
     motivos: list[str] = []
 
@@ -79,6 +80,7 @@ def revisar_enlace(url: str) -> dict[str, Any]:
     return {
         "dominio":      dominio,
         "es_oficial":   es_oficial,
+        "entidad":      dueno,
         "imita_a":      imita_a,
         "es_acortador": acortador,
         "sospechoso":   sospechoso,
@@ -104,7 +106,7 @@ def _extraer_dominio(url: str) -> str:
 def _contiene_marca(dominio: str, marca: str) -> bool:
     """Marcas largas: en cualquier parte. Cortas (<6): solo al inicio de una etiqueta
     o tras un guion, para no confundir 'meridian.com' con DIAN."""
-    if not marca:
+    if len(marca) < 3:  # 'wu' (Western Union) marcaría cualquier 'wuxi.cn' o 'wunder.com'
         return False
     if len(marca) >= 6:
         return marca in dominio

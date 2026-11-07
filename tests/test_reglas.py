@@ -122,3 +122,33 @@ def test_entidad_con_enlace_acortado_es_rojo():
     enlace = _h("revisar_enlace", {"dominio": "bit.ly", "es_oficial": False, "imita_a": None, "es_acortador": True})
     contrato = ContratoSalida(entidad_suplantada="Servientrega")
     assert calcular_semaforo(contrato, [canal, enlace])[0] == "rojo"
+
+
+# ── ENLACE OFICIAL COMPROBADO ─────────────────────────────────────────────────
+
+def _giro(pide=("clic",), telefonos=(), oficial=True):
+    contrato = ContratoSalida(
+        tacticas=[Tactica(id="premio_inesperado", evidencia="Llegaron 150000 COP"),
+                  Tactica(id="enlace_disfrazado", evidencia="go.wu.com/e/x")],
+        pide=list(pide), enlaces=["go.wu.com/e/x"], telefonos=list(telefonos),
+    )
+    h = [_h("revisar_enlace", {"dominio": "go.wu.com", "es_oficial": oficial, "imita_a": None,
+                               "es_acortador": False, "sospechoso": False, "motivo": "ninguno"})]
+    return calcular_semaforo(contrato, h)[0]
+
+
+def test_giro_real_con_enlace_oficial_es_verde():
+    """El dato de la tabla (dominio oficial) pesa más que las tácticas que el modelo creyó ver."""
+    assert _giro() == "verde"
+
+
+def test_enlace_oficial_pero_pide_transferencia_no_es_verde():
+    assert _giro(pide=("clic", "transferencia")) == "amarillo"
+
+
+def test_enlace_oficial_pero_con_telefono_no_es_verde():
+    assert _giro(telefonos=("3000000099",)) == "amarillo"
+
+
+def test_enlace_no_oficial_sigue_amarillo():
+    assert _giro(oficial=False) == "amarillo"

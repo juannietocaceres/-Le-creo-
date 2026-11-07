@@ -1,0 +1,515 @@
+{
+  "fecha": "2026-11-07T13:28:52",
+  "etiqueta": "v6_wu",
+  "proveedor": "google",
+  "modelo": "gemini-3.5-flash-lite",
+  "casos": 13,
+  "repeticiones": 1,
+  "descripciones": {
+    "buscar_numero": "Úsala con cada número de teléfono o celular que aparezca escrito en el mensaje, aunque venga con espacios o sin +57 (ej. '300 000 0007'), o si la persona dice desde qué número le escribieron. Consulta cuántas veces lo han reportado. No la uses si el mensaje no trae ningún teléfono, ni con montos de dinero, códigos de verificación, números de guía, de cuenta, de tarjeta o de cédula.",
+    "canal_oficial": "Úsala siempre que el mensaje diga venir de una entidad o hable en su nombre ('Bancolombia le informa', 'NEQUI:', 'Servientrega: su paquete'): un banco, una billetera, una transportadora, la DIAN o la Policía, sea el mensaje sospechoso o no. Devuelve cómo contacta de verdad esa entidad y qué nunca pide. No la uses si la entidad solo aparece como el medio donde piden la plata ('mándame al Nequi'), ni si el mensaje no menciona ninguna entidad.",
+    "revisar_enlace": "Úsala con cada enlace o dirección web que aparezca escrito en el mensaje, aunque no empiece por http o www (ej. 'bit.ly/abc', 'pagos-dian.co/pagar'). Revisa solo el texto: si imita un dominio oficial, si es un acortador o si tiene caracteres engañosos. No abre el enlace ni descarga nada. No la uses si el mensaje no trae ningún enlace escrito (por ejemplo, si solo dice 'haz clic aquí' o 'te envío el link'), ni con correos electrónicos."
+  },
+  "cifras": {
+    "tasa_exito": {
+      "aciertos": 13,
+      "total": 13,
+      "porcentaje": 100.0
+    },
+    "costo_por_tarea": {
+      "promedio_usd": 0.001807,
+      "total_usd": 0.023496,
+      "costo_real_usd": 0.0,
+      "precio_usado": {
+        "entrada_usd_por_millon": 0.3,
+        "salida_usd_por_millon": 2.5,
+        "nota": "Precio estándar (capa paga). La salida incluye los tokens de razonamiento.",
+        "fuente": "https://ai.google.dev/gemini-api/docs/pricing",
+        "consultado": "2026-10-30"
+      }
+    },
+    "latencia": {
+      "mediana_ms": 2122,
+      "min_ms": 1183,
+      "max_ms": 3353
+    },
+    "recuperacion": {
+      "cumplidas": 14,
+      "esperadas": 14,
+      "porcentaje": 100.0
+    },
+    "herramientas": {
+      "llamadas_por_caso": 1.08,
+      "de_mas": 0,
+      "de_mas_porcentaje": 0.0
+    },
+    "tokens_por_caso": 4406
+  },
+  "registros": [
+    {
+      "id": "c01",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2334,
+      "tokens_in": 4787,
+      "tokens_out": 287,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Servientrega"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bit.ly/srv-pago3500"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Servientrega"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bit.ly",
+              "es_acortador": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Inventan que tu paquete está retenido para quitarte dinero con un enlace falso.",
+      "que_hacer": "Ignora este mensaje y verifica el estado de tu envío en la página real de Servientrega.",
+      "repeticion": 1
+    },
+    {
+      "id": "c02",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2205,
+      "tokens_in": 4671,
+      "tokens_out": 287,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000007"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000007",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Usan la excusa de un número nuevo para que creas que hablas con un familiar y les mandes plata.",
+      "que_hacer": "Llama al número de siempre de tu familiar para verificar si de verdad cambió de celular.",
+      "repeticion": 1
+    },
+    {
+      "id": "c03",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2013,
+      "tokens_in": 4727,
+      "tokens_out": 258,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Nequi"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Nequi"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Te asustan diciendo que bloquearán tu cuenta para robarte el código de seguridad y quitarte la plata.",
+      "que_hacer": "Ignora el mensaje y bórralo de inmediato. Nequi nunca pide códigos de seguridad por mensajes.",
+      "repeticion": 1
+    },
+    {
+      "id": "c04",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2122,
+      "tokens_in": 4693,
+      "tokens_out": 301,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "premios-aniversario-col.net"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "premios-aniversario-col.net",
+              "es_oficial": false
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Te inventan un premio falso para quitarte dinero con la excusa de pagar un impuesto.",
+      "que_hacer": "Borra el mensaje de inmediato y no hagas clic en ningún enlace ni consignes dinero.",
+      "repeticion": 1
+    },
+    {
+      "id": "c05",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 3353,
+      "tokens_in": 4685,
+      "tokens_out": 313,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "3000000009"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000009",
+              "reportes": 2
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Te prometen un préstamo fácil para quitarte el dinero del supuesto estudio y luego desaparecen.",
+      "que_hacer": "No pagues ningún dinero por adelantado y borra ese mensaje.",
+      "repeticion": 1
+    },
+    {
+      "id": "c06",
+      "esperado": "amarillo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 1183,
+      "tokens_in": 2280,
+      "tokens_out": 191,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "explicacion": "Te prometen un trabajo fácil y te piden plata adelantada para robarte.",
+      "que_hacer": "Bloquea este número de inmediato y no les envíes dinero.",
+      "repeticion": 1
+    },
+    {
+      "id": "c07",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 1767,
+      "tokens_in": 4851,
+      "tokens_out": 150,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Bancolombia"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Este es un mensaje de aviso informativo que no te pide claves, dinero ni hacer clic en enlaces.",
+      "que_hacer": "Verifica en tu aplicación oficial del banco si la compra es real o comunícate a las líneas oficiales de la entidad.",
+      "repeticion": 1
+    },
+    {
+      "id": "c08",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 1406,
+      "tokens_in": 2257,
+      "tokens_out": 126,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "explicacion": "Es un código legítimo que tú mismo pediste para entrar a tu cuenta. No te pide datos ni dinero.",
+      "que_hacer": "Escribe el código en la aplicación oficial si lo estabas esperando. Si no lo pediste, ignóralo.",
+      "repeticion": 1
+    },
+    {
+      "id": "c09",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 1997,
+      "tokens_in": 4773,
+      "tokens_out": 166,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Inter Rapidísimo"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "interrapidisimo.com"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "interrapidisimo.com",
+              "es_oficial": true
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Inter Rapidísimo"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Es un aviso real sobre la entrega de un paquete y no te pide dinero ni datos.",
+      "que_hacer": "Puedes estar tranquilo, no tienes que hacer nada.",
+      "repeticion": 1
+    },
+    {
+      "id": "c10",
+      "esperado": "rechazo",
+      "obtenido": "rechazo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 1222,
+      "tokens_in": 2247,
+      "tokens_out": 37,
+      "iteraciones": 1,
+      "herramientas": [],
+      "recuperacion": [],
+      "llamadas_de_mas": [],
+      "explicacion": "Esta app analiza mensajes sospechosos. Para eso estoy aquí.",
+      "que_hacer": "",
+      "repeticion": 1
+    },
+    {
+      "id": "c11",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2483,
+      "tokens_in": 4948,
+      "tokens_out": 296,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Bancolombia"
+          }
+        },
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "bancolombia-actualizacion.co"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "bancolombia-actualizacion.co",
+              "imita_a": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Bancolombia"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Se hacen pasar por tu banco para asustarte y robar tus datos en una página falsa.",
+      "que_hacer": "Borra el mensaje y no hagas clic en ningún enlace.",
+      "repeticion": 1
+    },
+    {
+      "id": "c12",
+      "esperado": "rojo",
+      "obtenido": "rojo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2845,
+      "tokens_in": 4810,
+      "tokens_out": 248,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "buscar_numero",
+          "parametros": {
+            "numero": "300 000 0002"
+          }
+        },
+        {
+          "nombre": "canal_oficial",
+          "parametros": {
+            "entidad": "Davivienda"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "buscar_numero",
+            "debe": {
+              "numero": "+573000000002",
+              "peligroso": true
+            }
+          },
+          "cumplida": true
+        },
+        {
+          "esperada": {
+            "herramienta": "canal_oficial",
+            "debe": {
+              "encontrada": true,
+              "entidad": "Davivienda"
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Se hacen pasar por Davivienda y te asustan con un reporte para obligarte a llamar y robarte.",
+      "que_hacer": "Ignora este mensaje y comunícate solo por los canales oficiales del banco.",
+      "repeticion": 1
+    },
+    {
+      "id": "c13",
+      "esperado": "verde",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 2131,
+      "tokens_in": 4682,
+      "tokens_out": 209,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "go.wu.com/e/AbCdEf123"
+          }
+        }
+      ],
+      "recuperacion": [
+        {
+          "esperada": {
+            "herramienta": "revisar_enlace",
+            "debe": {
+              "dominio": "go.wu.com",
+              "es_oficial": true
+            }
+          },
+          "cumplida": true
+        }
+      ],
+      "llamadas_de_mas": [],
+      "explicacion": "Te avisan de una plata que no esperabas para que hagas clic en el enlace.",
+      "que_hacer": "No hagas clic en el enlace si no esperas ninguna transferencia.",
+      "repeticion": 1
+    }
+  ]
+}
