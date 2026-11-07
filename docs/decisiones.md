@@ -172,3 +172,10 @@ Detalle: `decisiones/publico_y_canal.md`.
 | Enlace oficial + "paga comisión al Nequi" | 🟡, no se aplica la excepción |
 
 **Suite v6_wu:** 13/13, recuperación 14/14. El caso c13 es el giro real con los datos cambiados.
+
+**Cobros con enlace oficial (DiDi, 2026-11-07):**
+- **Qué pasó:** llegó un cobro real de DiDi ("tarifa por cancelación… paga aquí", enlace `oia.didiglobal.com`) y salió 🟡 con la explicación "te inventan un cobro".
+- **Por qué sigue amarillo:** el mensaje pide pagar, y eso basta aunque el enlace sea oficial.
+- **Qué cambió en el texto:** si todos los enlaces son oficiales, la explicación ya no acusa. Dice que el enlace sí es de la entidad y que, si el cobro es real, también aparece en su app: hay que revisarlo ahí y no desde el mensaje. El truco "enlace disfrazado" no se muestra cuando el dato lo contradice.
+- **Por qué `didiglobal.com` es oficial:** el sitio de DiDi Colombia está en `web.didiglobal.com/co` y el dominio usa los servidores de nombres de DiDi (`didiwuxian.com`).
+- **Suite v7_didi:** 14/14, recuperación 15/15.

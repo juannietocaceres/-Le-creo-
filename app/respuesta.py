@@ -58,17 +58,25 @@ def _canal_verificado(r: ResultadoAgente, semaforo: str) -> dict | None:
 
 
 def _entidad_de_enlace_oficial(r: ResultadoAgente) -> str | None:
-    """Dueño del primer enlace que revisar_enlace encontró en la tabla de dominios oficiales."""
-    for h in r.herramientas:
-        res = h.resultado if isinstance(h.resultado, dict) else {}
-        if h.nombre == "revisar_enlace" and res.get("es_oficial") and res.get("entidad"):
-            return res["entidad"]
-    return None
+    """Dueño de los enlaces del mensaje si TODOS están en la tabla de dominios oficiales."""
+    if not r.contrato or not r.contrato.enlaces:
+        return None
+    revisados = [h.resultado for h in r.herramientas
+                 if h.nombre == "revisar_enlace" and isinstance(h.resultado, dict)]
+    if len(revisados) < len(r.contrato.enlaces) or not all(x.get("es_oficial") for x in revisados):
+        return None
+    return revisados[0].get("entidad") or None
 
 
 def _despejado(r: ResultadoAgente, semaforo: str) -> bool:
     """Verde aunque el modelo vio tácticas: las reglas comprobaron que el enlace es oficial."""
     return bool(semaforo == "verde" and r.contrato and r.contrato.tacticas and _entidad_de_enlace_oficial(r))
+
+
+def _oficial_que_cobra(r: ResultadoAgente, semaforo: str) -> str | None:
+    """Amarillo con enlace oficial: el cobro puede ser real, pero se revisa en la app, no en el mensaje.
+    Devuelve la entidad para que la explicación no acuse de 'inventar' algo que el dato no muestra."""
+    return _entidad_de_enlace_oficial(r) if semaforo == "amarillo" else None
 
 
 def para_llamar(r: ResultadoAgente, semaforo: str) -> dict | None:
@@ -91,6 +99,10 @@ def resumen(r: ResultadoAgente, semaforo: str) -> list[str]:
         # Las reglas despejaron lo que el modelo sospechaba: su explicación diría lo contrario.
         lineas.append(f"El enlace es de {_entidad_de_enlace_oficial(r)} (dominio oficial comprobado) y el mensaje no te pide "
                       "claves, códigos ni pagos.")
+    elif entidad_cobra := _oficial_que_cobra(r, semaforo):
+        lineas.append(f"El enlace sí es de {entidad_cobra} (dominio oficial comprobado), pero te piden pagar o "
+                      f"entregar algo. Si el cobro es real, también aparece en la app de {entidad_cobra}: "
+                      "revísalo ahí y no desde el mensaje.")
     elif c and c.explicacion:
         lineas.append(c.explicacion)
 
@@ -166,7 +178,8 @@ def _para_web(r: ResultadoAgente, semaforo: str) -> dict:
         "lineas": lineas,
         "ademas": c.que_hacer if c.que_hacer and c.que_hacer not in lineas[-1] and not despejado else None,
         "trucos": [] if despejado else
-                  [{"nombre": t.id.replace("_", " ").capitalize(), "evidencia": t.evidencia} for t in c.tacticas],
+                  [{"nombre": t.id.replace("_", " ").capitalize(), "evidencia": t.evidencia} for t in c.tacticas
+                   if not (t.id == "enlace_disfrazado" and _entidad_de_enlace_oficial(r))],
         "revise": que_revise(r),
         "truncado": r.truncado,
         "avisos": r.avisos,

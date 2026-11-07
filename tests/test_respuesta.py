@@ -128,3 +128,32 @@ def test_verde_por_enlace_oficial_no_repite_trucos_ni_consejo_del_modelo():
     web = respuesta.para_web(r, "verde")
     assert web["trucos"] == [] and web["ademas"] is None
     assert "Western Union" in web["lineas"][1] and "inventan" not in " ".join(web["lineas"])
+
+
+def test_amarillo_con_enlace_oficial_no_acusa_y_manda_a_la_app():
+    """DiDi real cobra una tarifa con enlace de didiglobal.com: sigue 🟡 (piden pagar), sin decir 'inventan'."""
+    from app.contrato import ContratoSalida, LlamadaHerramienta, Tactica
+    from app.agente import ResultadoAgente
+    from app import respuesta
+    c = ContratoSalida(tacticas=[Tactica(id="enlace_disfrazado", evidencia="oia.didiglobal.com"),
+                                 Tactica(id="pago_anticipado", evidencia="tarifa pendiente")],
+                       pide=["transferencia", "clic"], enlaces=["https://oia.didiglobal.com/dlp/x"],
+                       explicacion="Te inventan un cobro.")
+    h = [LlamadaHerramienta(nombre="revisar_enlace", parametros={}, latencia_ms=0,
+                            resultado={"dominio": "oia.didiglobal.com", "es_oficial": True, "entidad": "DiDi"})]
+    web = respuesta.para_web(ResultadoAgente(contrato=c, herramientas=h), "amarillo")
+    texto = " ".join(web["lineas"])
+    assert "inventan" not in texto and "app de DiDi" in texto
+    assert [t["nombre"] for t in web["trucos"]] == ["Pago anticipado"]
+
+
+def test_amarillo_con_un_enlace_no_oficial_conserva_la_explicacion():
+    from app.contrato import ContratoSalida, LlamadaHerramienta
+    from app.agente import ResultadoAgente
+    from app import respuesta
+    c = ContratoSalida(pide=["clic"], enlaces=["didiglobal.com/x", "didi-pagos.xyz/y"], explicacion="Te inventan un cobro.")
+    h = [LlamadaHerramienta(nombre="revisar_enlace", parametros={}, latencia_ms=0,
+                            resultado={"dominio": d, "es_oficial": o, "entidad": "DiDi" if o else None})
+         for d, o in [("didiglobal.com", True), ("didi-pagos.xyz", False)]]
+    web = respuesta.para_web(ResultadoAgente(contrato=c, herramientas=h), "amarillo")
+    assert "Te inventan un cobro." in web["lineas"]

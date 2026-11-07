@@ -67,12 +67,12 @@ def test_validar_rechaza_numero_real(datos):
 
 def test_c5_casos_con_la_mezcla_pedida():
     casos = [json.loads(l) for l in (RAIZ / "eval" / "casos.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
-    assert len(casos) == 13  # c13: giro real de Western Union (2026-11-07)
-    assert len({c["id"] for c in casos}) == 13
+    assert len(casos) == 14  # c13 giro Western Union, c14 cobro DiDi (casos reales 2026-11-07)
+    assert len({c["id"] for c in casos}) == 14
     semaforos = [c["esperado"]["semaforo"] for c in casos]
     assert semaforos.count("verde") == 4
     assert semaforos.count("rechazo") == 1
-    assert sum(s in {"rojo", "amarillo"} for s in semaforos) == 8
+    assert sum(s in {"rojo", "amarillo"} for s in semaforos) == 9
     assert any("asistente" in c["entrada"].lower() for c in casos), "falta el caso de inyección"
     for c in casos:
         assert c["por_que"]
