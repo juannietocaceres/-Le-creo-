@@ -2,8 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#140a2b">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3f1f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121019" media="(prefers-color-scheme: dark)">
 <title>¿Le creo?</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icono-192.png">
@@ -12,40 +13,56 @@
 </head>
 <body>
 <main>
-  <header>
-    <img src="/icono-192.png" alt="" width="56" height="56">
+  <header class="marca">
+    <img src="/icono-192.png" alt="" width="52" height="52">
     <div>
       <h1>¿Le creo?</h1>
       <p class="sub">Una segunda opinión antes de pagar</p>
     </div>
   </header>
 
-  <section id="entrada">
-    <p class="guia">¿Te llegó un mensaje raro? Compártelo desde WhatsApp o pégalo aquí.</p>
-    <textarea id="texto" rows="5" placeholder="Pega aquí el mensaje que te llegó"></textarea>
-    <button id="pegar" type="button" class="grande secundario">📋 Pegar y revisar</button>
-    <button id="revisar" type="button" class="grande">Revisar mensaje</button>
-    <label class="grande secundario boton-archivo">
-      📷 🎙️ Revisar captura o audio
-      <input id="captura" type="file" accept="image/png,image/jpeg,image/webp,audio/*,.opus,.ogg,.m4a" hidden>
-    </label>
+  <section id="entrada" class="pantalla">
+    <h2 class="pregunta">¿Te llegó un mensaje raro?</h2>
+    <ol class="pasos" aria-label="Cómo funciona">
+      <li><span class="paso-num">1</span>Me lo compartes o lo pegas</li>
+      <li><span class="paso-num">2</span>Reviso el número y el enlace</li>
+      <li><span class="paso-num">3</span>Te digo qué hacer</li>
+    </ol>
+    <label for="texto" class="etiqueta">El mensaje que te llegó</label>
+    <textarea id="texto" rows="5" placeholder="Pega aquí el mensaje"></textarea>
+    <div class="botones">
+      <button id="revisar" type="button" class="grande principal">Revisar mensaje</button>
+      <button id="pegar" type="button" class="grande secundario"><span aria-hidden="true">📋</span> Pegar y revisar</button>
+      <label class="grande secundario boton-archivo">
+        <span aria-hidden="true">📷</span> Revisar foto o audio
+        <input id="captura" type="file" accept="image/png,image/jpeg,image/webp,audio/*,.opus,.ogg,.m4a" hidden>
+      </label>
+    </div>
   </section>
 
-  <section id="espera" hidden>
-    <div class="girando" aria-hidden="true"></div>
-    <p class="guia">Revisando el mensaje…</p>
+  <section id="espera" class="pantalla espera" hidden aria-live="polite">
+    <div class="semaforo grande-semaforo ciclo" aria-hidden="true"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>
+    <p id="paso-espera" class="paso-espera">Leyendo el mensaje…</p>
+    <p class="nota">Tarda unos segundos.</p>
   </section>
 
-  <section id="resultado" hidden aria-live="polite">
+  <section id="resultado" class="pantalla" hidden aria-live="polite">
     <p id="origen" class="origen" hidden></p>
-    <div id="tarjeta" class="tarjeta">
-      <p id="orden" class="orden"></p>
+    <article id="tarjeta" class="tarjeta">
+      <div class="senal">
+        <div class="semaforo" aria-hidden="true"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>
+        <p id="orden" class="orden"></p>
+      </div>
       <p id="porque" class="porque"></p>
       <p id="accion" class="accion"></p>
+    </article>
+    <div class="ayudas">
+      <a id="llamar" class="grande llamar" hidden></a>
+      <button id="escuchar" type="button" class="grande secundario" hidden><span aria-hidden="true">🔊</span> <span id="escuchar-texto">Escuchar</span></button>
     </div>
     <div id="acciones" class="acciones" hidden></div>
     <ul id="avisos" class="avisos" hidden></ul>
-    <button id="reintentar" type="button" class="grande" hidden>🔄 Reintentar</button>
+    <button id="reintentar" type="button" class="grande principal" hidden>Reintentar</button>
     <details id="detalle">
       <summary>Ver por qué</summary>
       <div id="detalle-cuerpo"></div>
@@ -54,13 +71,14 @@
   </section>
 
   <footer>
-    <p>No abro los enlaces y no guardo tus mensajes.</p>
+    <p class="privacidad"><span aria-hidden="true">🔒</span> No abro los enlaces y no guardo tus mensajes.</p>
     <details>
       <summary>¿Cómo la pongo en el celular?</summary>
       <ol>
         <li>Abre esta página en <b>Chrome</b> en un celular Android.</li>
-        <li>Toca los tres puntos ⋮ → <b>Agregar a pantalla de inicio</b> → Instalar.</li>
-        <li>Listo: en WhatsApp deja presionado un mensaje → ⋮ → <b>Compartir</b> → <b>¿Le creo?</b></li>
+        <li>Toca los tres puntos ⋮ → <b>Instalar app</b>.</li>
+        <li>En WhatsApp, deja presionada una <b>nota de voz o una foto</b> → <b>Compartir</b> → <b>¿Le creo?</b></li>
+        <li>Para un mensaje de <b>texto</b>: cópialo, abre ¿Le creo? y toca <b>Pegar y revisar</b>.</li>
       </ol>
     </details>
   </footer>

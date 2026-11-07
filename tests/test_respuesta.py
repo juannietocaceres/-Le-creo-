@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from app.contrato import ContratoSalida, LlamadaHerramienta, ResultadoAgente
-from app.respuesta import AVISO_VERDE, ORDENES, linea_oficial, para_telegram, resumen
+from app.respuesta import AVISO_VERDE, ORDENES, linea_oficial, para_llamar, para_telegram, para_web, resumen
 
 CSV = Path(__file__).parent.parent / "data" / "semillas" / "canales_oficiales.csv"
 CANALES = {f["entidad"]: f["canales"] for f in csv.DictReader(CSV.open(encoding="utf-8"))}
@@ -84,3 +84,31 @@ def test_telegram_empieza_por_la_orden_en_negrita():
     texto = para_telegram(_resultado("Bancolombia", explicacion="Página falsa."), "rojo")
     assert texto.startswith(f"<b>{ORDENES['rojo']}</b>")
     assert "01 8000 9 12345" in texto
+
+
+# ── B3: botón "Llamar a la línea oficial" ────────────────────────────────────
+
+def test_llamar_trae_la_linea_verificada_lista_para_marcar():
+    r = _resultado("Bancolombia", explicacion="Te quieren robar la clave.")
+    assert para_llamar(r, "rojo") == {"entidad": "Bancolombia", "numero": "01 8000 9 12345", "marcar": "018000912345"}
+    assert para_web(r, "rojo")["llamar"]["marcar"] == "018000912345"
+
+
+def test_llamar_a_la_policia_marca_123():
+    assert para_llamar(_resultado("Policía Nacional"), "rojo")["marcar"] == "123"
+
+
+def test_sin_linea_conocida_no_hay_boton():
+    assert para_llamar(_resultado("Nequi"), "rojo") is None
+
+
+def test_entidad_que_solo_es_destino_no_da_boton():
+    """'Mándame al Nequi' o un banco que no escribe el mensaje: no se ofrece llamarlo."""
+    assert para_llamar(_resultado("Bancolombia", suplantada=False), "rojo") is None
+
+
+def test_el_boton_nunca_sale_del_modelo():
+    """Un número que el modelo escriba en que_hacer no se convierte en botón."""
+    r = _resultado(None, que_hacer="Llama al 3001234567 ya mismo.")
+    assert para_llamar(r, "rojo") is None
+    assert para_web(r, "rojo")["llamar"] is None

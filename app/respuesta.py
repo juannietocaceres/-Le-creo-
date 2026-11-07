@@ -57,6 +57,18 @@ def _canal_verificado(r: ResultadoAgente, semaforo: str) -> dict | None:
     return None
 
 
+def para_llamar(r: ResultadoAgente, semaforo: str) -> dict | None:
+    """B3: la línea oficial para el botón "Llamar". Sale de la tabla verificada, nunca del modelo,
+    y solo cuando el resumen ya la recomienda (misma regla que `_canal_verificado`)."""
+    if semaforo not in ORDENES or r.contrato is None:
+        return None
+    canal = _canal_verificado(r, semaforo)
+    numero = linea_oficial(canal.get("canales", "")) if canal else None
+    if not numero:
+        return None
+    return {"entidad": canal.get("entidad", ""), "numero": numero, "marcar": re.sub(r"\D", "", numero)}
+
+
 def resumen(r: ResultadoAgente, semaforo: str) -> list[str]:
     """Las tres líneas para una persona mayor: qué hacer, por qué y a quién llamar. Texto plano."""
     lineas = [ORDENES[semaforo]]
@@ -138,6 +150,7 @@ def _para_web(r: ResultadoAgente, semaforo: str) -> dict:
         "revise": que_revise(r),
         "truncado": r.truncado,
         "avisos": r.avisos,
+        "llamar": para_llamar(r, semaforo),
     }
 
 

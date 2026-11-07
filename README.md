@@ -11,13 +11,15 @@ Te llega un mensaje sospechoso por WhatsApp o SMS. Lo compartes con **¿Le creo?
 
 <br>
 
-<img src="docs/img/app_rojo.jpg" width="230" alt="Resultado rojo: NO pagues ni abras enlaces">
-&nbsp;&nbsp;
-<img src="docs/img/app_por_que.jpg" width="230" alt="Ver por qué: el truco, qué revisó y con qué IA">
-&nbsp;&nbsp;
-<img src="docs/img/app_verde.jpg" width="230" alt="Mensaje real del banco en verde con su línea oficial">
+<img src="docs/img/v2_espera.jpg" width="200" alt="Mientras revisa: el semáforo va pasando de luz en luz y dice qué está revisando">
+&nbsp;
+<img src="docs/img/v2_rojo.jpg" width="200" alt="Resultado rojo con el semáforo encendido y el botón Llamar a Bancolombia">
+&nbsp;
+<img src="docs/img/v2_por_que.jpg" width="200" alt="Ver por qué: cada truco con la frase del mensaje que lo prueba">
+&nbsp;
+<img src="docs/img/v2_verde_oscuro.jpg" width="200" alt="Aviso real del banco en verde, en modo oscuro">
 
-<sub>Capturas reales de la app: una estafa de "familiar en apuros" (🔴), el porqué con la frase que lo prueba y un aviso real del banco (🟢).</sub>
+<sub>Capturas reales: mientras revisa · un SMS falso de Bancolombia (🔴) con el botón para llamar a su línea oficial · el porqué · un aviso real del banco (🟢) en modo oscuro.</sub>
 
 </div>
 
@@ -50,6 +52,8 @@ Está pensada para **personas mayores y su familia**: un familiar instala la app
 | 🚦 **Semáforo** | 🔴 estafa · 🟡 sospechoso · 🟢 sin señales. La **orden va primero**: "NO pagues ni abras enlaces". |
 | 🧩 **El truco** | Qué táctica usan (urgencia, familiar en apuros, autoridad falsa…) con la **frase exacta** del mensaje que lo prueba. |
 | 👉 **Qué hacer** | Un paso concreto y, si el mensaje dice venir de una entidad, su **línea oficial verificada**. |
+| 📞 **Llamar** | Un botón que marca la línea oficial con un toque. El número sale de la tabla verificada, **nunca** de la IA. |
+| 🔊 **Escuchar** | Lee la respuesta en voz alta, despacio, para quien ve poco. Usa la voz del propio celular, sin costo. |
 | 🔎 **Qué revisé** | Qué consultó el agente y qué encontró: número reportado, enlace que imita a un banco, canal oficial. |
 | 📤 **Entra como sea** | Texto, **pantallazo** o **nota de voz**, compartidos desde WhatsApp o subidos en la página. |
 | 🚩 **Reportar** | Marca un número como estafa **solo con tu clic**. Con 3 reportes, queda en alerta. |

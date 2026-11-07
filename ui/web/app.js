@@ -5,9 +5,32 @@
 const $ = (id) => document.getElementById(id);
 const secciones = { entrada: $("entrada"), espera: $("espera"), resultado: $("resultado") };
 
+// Lo que va diciendo mientras revisa: los pasos reales del agente, en palabras de todos los días.
+const PASOS_ESPERA = [
+  "Leyendo el mensaje…",
+  "Buscando el número en los reportes…",
+  "Mirando el enlace, sin abrirlo…",
+  "Revisando cómo contacta de verdad la entidad…",
+  "Decidiendo el color del semáforo…",
+];
+let relojEspera = null;
+
 function mostrar(nombre) {
   for (const [clave, el] of Object.entries(secciones)) el.hidden = clave !== nombre;
+  clearInterval(relojEspera);
+  if (nombre === "espera") {
+    let i = 0;
+    $("paso-espera").textContent = PASOS_ESPERA[0];
+    relojEspera = setInterval(() => {
+      i = Math.min(i + 1, PASOS_ESPERA.length - 1);
+      $("paso-espera").textContent = PASOS_ESPERA[i];
+    }, 1600);
+  }
+  if (nombre !== "resultado") callar();
 }
+
+// El semáforo ya muestra el color: el emoji del inicio sobra en pantalla (y se lee raro en voz alta).
+const sinEmoji = (t) => (t || "").replace(/^(?:🔴|🟡|🟢|👉|⚠️)\s*/u, "");
 
 function parrafo(texto) {
   const p = document.createElement("p");
@@ -15,18 +38,36 @@ function parrafo(texto) {
   return p;
 }
 
-function lista(titulo, items) {
-  const frag = document.createDocumentFragment();
-  const h = document.createElement("h2");
-  h.textContent = titulo;
+function titulo(texto) {
+  const h = document.createElement("h3");
+  h.textContent = texto;
+  return h;
+}
+
+function lista(items, clase) {
   const ul = document.createElement("ul");
+  ul.className = clase;
   for (const item of items) {
     const li = document.createElement("li");
     li.textContent = item;
     ul.append(li);
   }
-  frag.append(h, ul);
-  return frag;
+  return ul;
+}
+
+function trucos(items) {   // cada truco con la frase del mensaje que lo prueba
+  const ul = document.createElement("ul");
+  ul.className = "trucos";
+  for (const t of items) {
+    const li = document.createElement("li");
+    const b = document.createElement("b");
+    b.textContent = t.nombre;
+    const q = document.createElement("q");
+    q.textContent = t.evidencia;
+    li.append(b, q);
+    ul.append(li);
+  }
+  return ul;
 }
 
 function pintar(datos) {
@@ -35,24 +76,23 @@ function pintar(datos) {
   const porque = resto.length > 1 ? resto.slice(0, -1).join(" ") : "";
 
   $("tarjeta").className = `tarjeta ${datos.semaforo}`;
-  $("orden").textContent = orden;
+  $("orden").textContent = sinEmoji(orden);
   $("porque").textContent = porque;
   $("porque").hidden = !porque;
-  $("accion").textContent = accion;
+  $("accion").textContent = sinEmoji(accion);
+  $("accion").hidden = !accion;
+  pintarAyudas(datos);
 
   const cuerpo = $("detalle-cuerpo");
   cuerpo.replaceChildren();
-  if (datos.ademas) cuerpo.append(parrafo(`Además: ${datos.ademas}`));
-  if (datos.trucos && datos.trucos.length)
-    cuerpo.append(lista("El truco que usan", datos.trucos.map((t) => `${t.nombre}: «${t.evidencia}»`)));
-  if (datos.revise && datos.revise.length) cuerpo.append(lista("Qué revisé", datos.revise));
+  if (datos.trucos && datos.trucos.length) cuerpo.append(titulo("El truco que usan"), trucos(datos.trucos));
+  if (datos.ademas) cuerpo.append(titulo("Además"), parrafo(datos.ademas));
+  if (datos.revise && datos.revise.length) cuerpo.append(titulo("Qué revisé"), lista(datos.revise, "revise"));
   if (datos.truncado) cuerpo.append(parrafo("El mensaje era muy largo: revisé solo el comienzo."));
   if (datos.leido) {
-    const h = document.createElement("h2");
-    h.textContent = datos.tipo === "audio" ? "Esto es lo que escuché en el audio" : "Esto es lo que leí en la captura";
     const p = parrafo(datos.leido);
     p.className = "leido";
-    cuerpo.append(h, p);
+    cuerpo.append(titulo(datos.tipo === "audio" ? "Lo que escuché en el audio" : "Lo que leí en la foto"), p);
   }
   if (datos.analizado_con) {
     const p = parrafo(`Analizado con ${datos.analizado_con}`);
@@ -75,6 +115,46 @@ function pintar(datos) {
   mostrar("resultado");
   $("tarjeta").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+// ── B3: llamar a la línea oficial · B2: escuchar la respuesta ───────────────
+// El número del botón llega aparte desde el servidor y sale de la tabla verificada, nunca del modelo.
+
+function pintarAyudas(datos) {
+  const llamar = $("llamar");
+  if (datos.llamar && /^\d{3,15}$/.test(datos.llamar.marcar)) {
+    llamar.href = `tel:${datos.llamar.marcar}`;
+    const linea = document.createElement("span");
+    linea.textContent = `📞 Llamar a ${datos.llamar.entidad}`;
+    const numero = document.createElement("small");
+    numero.textContent = datos.llamar.numero;
+    llamar.replaceChildren(linea, numero);
+    llamar.hidden = false;
+  } else {
+    llamar.hidden = true;
+  }
+  $("escuchar").hidden = !("speechSynthesis" in window) || !["rojo", "amarillo", "verde"].includes(datos.semaforo);
+}
+
+function callar() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  $("escuchar-texto").textContent = "Escuchar";
+}
+
+function escuchar() {
+  if (speechSynthesis.speaking) return callar();
+  const texto = [$("orden"), $("porque"), $("accion")]
+    .filter((el) => !el.hidden && el.textContent).map((el) => el.textContent).join(". ");
+  const voz = new SpeechSynthesisUtterance(texto);
+  const voces = speechSynthesis.getVoices();
+  voz.voice = voces.find((v) => v.lang === "es-CO") || voces.find((v) => v.lang.startsWith("es")) || null;
+  voz.lang = voz.voice ? voz.voice.lang : "es-CO";
+  voz.rate = 0.9;   // un poco más despacio que lo normal
+  voz.onend = voz.onerror = () => ($("escuchar-texto").textContent = "Escuchar");
+  $("escuchar-texto").textContent = "Parar";
+  speechSynthesis.speak(voz);
+}
+
+$("escuchar").addEventListener("click", escuchar);
 
 // ── Acciones que la persona aprueba con un clic (D14) ───────────────────────
 // El servidor solo escribe en la base si recibe el permiso de un solo uso que vino con el resultado.

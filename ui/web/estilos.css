@@ -1,119 +1,211 @@
+/* ¿Le creo? — un semáforo de verdad: una carcasa oscura con tres luces que se encienden
+   según lo que encontramos. Una columna, letra grande, botones de un dedo.
+   Fuentes del sistema a propósito: Roboto en Android, sin pedir nada a terceros (CSP 'self'). */
 :root {
-  --fondo: #f7f5fc;
-  --texto: #160f2b;
-  --suave: #4f4767;
-  --violeta: #140a2b;
-  --rojo: #c4103f;
-  --rojo-fondo: #ffe3ea;
-  --amarillo: #8a5a00;
-  --amarillo-fondo: #fff2c7;
-  --verde: #046b45;
-  --verde-fondo: #dcf8ea;
-  --gris-fondo: #ebe8f3;
+  /* Neutros con un toque violeta, el color de la marca */
+  --papel: #f3f1f7;
+  --superficie: #ffffff;
+  --tinta: #17112b;
+  --tenue: #574f70;
+  --linea: #d9d3e8;
+  --carcasa: #1b1430;
+  --acento: #5a3fd0;
+  --acento-tinta: #ffffff;
+  /* Semáforo: el texto y el fondo de cada estado, y la luz encendida */
+  --rojo: #b80d2c;       --rojo-fondo: #fde8ec;     --luz-r: #ff3b5c;
+  --ambar: #7d5100;      --ambar-fondo: #fff3d1;    --luz-a: #ffc21a;
+  --verde: #05704a;      --verde-fondo: #e0f6eb;    --luz-v: #1fd98a;
+  --neutro-fondo: #ebe8f2;
+  --sombra: 0 10px 30px rgba(27, 20, 48, .12);
+
+  --texto: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radio: 18px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papel: #121019;
+    --superficie: #1c1828;
+    --tinta: #f2eefc;
+    --tenue: #b2aac9;
+    --linea: #352d4b;
+    --carcasa: #07050d;
+    --acento: #a58bff;
+    --acento-tinta: #120b29;
+    --rojo: #ff8fa1;       --rojo-fondo: #3b1520;
+    --ambar: #ffd166;      --ambar-fondo: #372a0b;
+    --verde: #62e2a8;      --verde-fondo: #0f3324;
+    --neutro-fondo: #241f33;
+    --sombra: 0 10px 30px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
 }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }   /* que ningún display de una clase muestre algo oculto */
-html { font-size: 21px; }
+html { font-size: 21px; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  background: var(--fondo);
-  color: var(--texto);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.4;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--texto);
+  line-height: 1.45;
 }
-main { max-width: 640px; margin: 0 auto; padding: 16px 16px 40px; }
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+h1, h2 { text-wrap: balance; }
 
-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-header img { border-radius: 14px; }
-h1 { font-size: 1.6rem; margin: 0; }
-.sub { margin: 0; color: var(--suave); font-size: .9rem; }
+/* ── Encabezado ─────────────────────────────────────────────────────────── */
+.marca { display: flex; align-items: center; gap: 14px; }
+.marca img { border-radius: 14px; box-shadow: var(--sombra); }
+.marca h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -.02em; margin: 0; line-height: 1.1; }
+.sub { margin: 2px 0 0; color: var(--tenue); font-size: .85rem; }
 
-.guia { font-size: 1.05rem; margin: 0 0 12px; }
+.pantalla { display: flex; flex-direction: column; gap: 16px; }
 
+/* ── Inicio ─────────────────────────────────────────────────────────────── */
+.pregunta { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; margin: 4px 0 0; }
+.pasos { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pasos li {
+  display: flex; align-items: center; gap: 12px;
+  font-size: .95rem; color: var(--tenue);
+}
+.paso-num {
+  flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--carcasa); color: #fff; font-weight: 800; font-size: .8rem;
+}
+.etiqueta { font-weight: 700; font-size: .95rem; margin-bottom: -8px; }
 textarea {
-  width: 100%;
-  font: inherit;
-  font-size: 1rem;
-  padding: 14px;
-  border: 2px solid #c9c2dd;
-  border-radius: 14px;
-  background: #fff;
-  color: var(--texto);
+  width: 100%; min-height: 150px;
+  font: inherit; font-size: 1rem; line-height: 1.4;
+  padding: 14px 16px;
+  border: 2px solid var(--linea); border-radius: var(--radio);
+  background: var(--superficie); color: var(--tinta);
   resize: vertical;
 }
-textarea:focus { outline: 3px solid #8b5cff; border-color: transparent; }
+textarea::placeholder { color: var(--tenue); opacity: .8; }
+textarea:focus { outline: 3px solid var(--acento); outline-offset: 2px; border-color: transparent; }
 
-button.grande {
-  display: block;
-  width: 100%;
-  min-height: 64px;
-  margin-top: 12px;
-  font: inherit;
-  font-size: 1.15rem;
-  font-weight: 700;
-  border: 0;
-  border-radius: 16px;
-  background: var(--violeta);
-  color: #fff;
-  cursor: pointer;
+/* ── Botones de un dedo ─────────────────────────────────────────────────── */
+.botones, .ayudas { display: flex; flex-direction: column; gap: 12px; }
+.grande {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 64px; padding: 10px 18px;
+  font: inherit; font-size: 1.1rem; font-weight: 800; text-align: center; text-decoration: none;
+  border-radius: var(--radio); border: 2px solid transparent; cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
 }
-button.grande.secundario, .boton-archivo { background: #fff; color: var(--violeta); border: 2px solid var(--violeta); }
-.boton-archivo {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 64px; margin-top: 12px; border-radius: 16px;
-  font-size: 1.15rem; font-weight: 700; cursor: pointer;
+.grande:active { transform: scale(.98); }
+.principal { background: var(--acento); color: var(--acento-tinta); box-shadow: var(--sombra); }
+.secundario { background: var(--superficie); color: var(--tinta); border-color: var(--linea); }
+.grande:focus-visible, .boton-archivo:focus-within, .boton-chico:focus-visible, summary:focus-visible {
+  outline: 4px solid var(--acento); outline-offset: 3px;
 }
-.boton-archivo:focus-within { outline: 4px solid #8b5cff; outline-offset: 3px; }
-.acciones { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-.bloque { background: #fff; border: 1px solid #d8d2ea; border-radius: 14px; padding: 12px 14px; }
+.grande:disabled { opacity: .5; cursor: default; }
+
+/* ── El semáforo ────────────────────────────────────────────────────────── */
+.semaforo {
+  flex: none; display: inline-flex; flex-direction: column; gap: 6px; padding: 8px;
+  background: var(--carcasa); border-radius: 999px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.06);
+}
+.luz { width: 22px; height: 22px; border-radius: 50%; opacity: .2; transition: opacity .4s ease, box-shadow .4s ease; }
+.luz.r { background: var(--luz-r); }
+.luz.a { background: var(--luz-a); }
+.luz.v { background: var(--luz-v); }
+.rojo     .luz.r { opacity: 1; box-shadow: 0 0 16px 3px var(--luz-r); }
+.amarillo .luz.a { opacity: 1; box-shadow: 0 0 16px 3px var(--luz-a); }
+.verde    .luz.v { opacity: 1; box-shadow: 0 0 16px 3px var(--luz-v); }
+
+/* Mientras revisa: el semáforo grande, acostado, que va pasando de luz en luz */
+.espera { align-items: center; text-align: center; padding-block: 36px 12px; }
+.grande-semaforo { flex-direction: row; gap: 12px; padding: 12px 16px; }
+.grande-semaforo .luz { width: 44px; height: 44px; }
+.ciclo .luz { animation: encender 2.4s infinite; }
+.ciclo .luz.a { animation-delay: .8s; }
+.ciclo .luz.v { animation-delay: 1.6s; }
+@keyframes encender {
+  0%, 30%   { opacity: 1; box-shadow: 0 0 20px 4px currentColor; }
+  34%, 100% { opacity: .2; box-shadow: none; }
+}
+.ciclo .luz.r { color: var(--luz-r); }
+.ciclo .luz.a { color: var(--luz-a); }
+.ciclo .luz.v { color: var(--luz-v); }
+.paso-espera { font-size: 1.15rem; font-weight: 700; margin: 8px 0 0; min-height: 1.6em; }
+.nota { color: var(--tenue); font-size: .85rem; margin: 0; }
+
+/* ── El resultado ───────────────────────────────────────────────────────── */
+.origen {
+  align-self: flex-start; margin: 0; padding: 6px 14px; border-radius: 999px;
+  background: var(--neutro-fondo); color: var(--tinta); font-weight: 700; font-size: .85rem;
+}
+.tarjeta {
+  display: flex; flex-direction: column; gap: 14px;
+  border-radius: 24px; padding: 22px 20px;
+  background: var(--neutro-fondo); border: 2px solid var(--linea);
+}
+.tarjeta.rojo     { background: var(--rojo-fondo);  border-color: var(--rojo); }
+.tarjeta.amarillo { background: var(--ambar-fondo); border-color: var(--ambar); }
+.tarjeta.verde    { background: var(--verde-fondo); border-color: var(--verde); }
+.senal { display: flex; align-items: center; gap: 16px; }
+.orden { font-size: 1.45rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; margin: 0; min-width: 0; }
+.rojo .orden { color: var(--rojo); }
+.amarillo .orden { color: var(--ambar); }
+.verde .orden { color: var(--verde); }
+.porque { font-size: 1.08rem; margin: 0; }
+.accion {
+  font-size: 1.1rem; font-weight: 700; margin: 0;
+  padding: 14px 16px; border-radius: 14px; background: var(--superficie);
+}
+.tarjeta.rechazo .senal .semaforo, .tarjeta.error .senal .semaforo, .tarjeta.vacio .senal .semaforo { display: none; }
+
+.llamar { background: var(--verde); color: var(--papel); flex-direction: column; gap: 0; line-height: 1.2; }
+.llamar small { font-size: .9rem; font-weight: 600; opacity: .9; font-variant-numeric: tabular-nums; }
+
+/* ── Acciones con aprobación (D14) ──────────────────────────────────────── */
+.acciones { display: flex; flex-direction: column; gap: 10px; }
+.bloque { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: 14px 16px; }
 .bloque p { margin: 0 0 10px; font-size: .95rem; }
 .fila-botones { display: flex; gap: 8px; flex-wrap: wrap; }
 .boton-chico {
-  font: inherit; font-size: .95rem; font-weight: 700; padding: 10px 14px; min-height: 48px;
-  border-radius: 12px; border: 2px solid var(--violeta); background: #fff; color: var(--violeta); cursor: pointer;
+  font: inherit; font-size: .95rem; font-weight: 700; padding: 10px 16px; min-height: 48px;
+  border-radius: 12px; border: 2px solid var(--linea); background: var(--superficie); color: var(--tinta); cursor: pointer;
 }
-.boton-chico.fuerte { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.boton-chico.fuerte { background: var(--rojo); border-color: var(--rojo); color: var(--papel); }
 .boton-chico:disabled { opacity: .5; }
-.avisos { margin: 12px 0 0; padding-left: 20px; color: var(--suave); font-size: .85rem; }
+.avisos { margin: 0; padding-left: 20px; color: var(--tenue); font-size: .85rem; }
 .avisos li { margin-bottom: 4px; }
-.leido { white-space: pre-wrap; background: #fff; border: 1px solid #d8d2ea; border-radius: 10px; padding: 10px 12px; font-size: .9rem; }
-.analizado-con { color: #6b6585; font-size: .85rem; margin-top: 12px; }
-button.grande:focus-visible { outline: 4px solid #8b5cff; outline-offset: 3px; }
-button.grande:disabled { opacity: .5; }
 
-#espera { text-align: center; padding: 40px 0; }
-.girando {
-  width: 56px; height: 56px; margin: 0 auto 16px;
-  border: 6px solid #d8d2ea; border-top-color: var(--violeta); border-radius: 50%;
-  animation: girar 1s linear infinite;
+/* ── Ver por qué ────────────────────────────────────────────────────────── */
+details { border-top: 1px solid var(--linea); }
+summary { font-size: 1rem; font-weight: 700; cursor: pointer; padding: 14px 0; color: var(--tinta); }
+#detalle-cuerpo { display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
+#detalle-cuerpo h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--tenue); margin: 12px 0 2px; }
+#detalle-cuerpo p { margin: 0; font-size: .95rem; }
+.trucos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.trucos li { background: var(--superficie); border: 1px solid var(--linea); border-radius: 14px; padding: 10px 14px; font-size: .92rem; }
+.trucos b { display: block; font-size: .95rem; }
+.trucos q { color: var(--tenue); }
+.revise { margin: 0; padding-left: 22px; font-size: .95rem; }
+.revise li { margin-bottom: 4px; }
+.leido { white-space: pre-wrap; background: var(--superficie); border: 1px solid var(--linea); border-radius: 12px; padding: 10px 12px; font-size: .9rem; }
+.analizado-con { color: var(--tenue); font-size: .8rem; margin-top: 8px !important; }
+
+/* ── Pie ────────────────────────────────────────────────────────────────── */
+footer { color: var(--tenue); font-size: .85rem; display: flex; flex-direction: column; gap: 4px; }
+.privacidad { margin: 0; }
+footer summary { font-size: .9rem; color: var(--tenue); }
+footer ol { padding-left: 22px; margin: 0 0 8px; }
+footer li { margin-bottom: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ciclo .luz { animation: none; opacity: .6; }
+  .grande, .luz { transition: none; }
 }
-@keyframes girar { to { transform: rotate(360deg); } }
-
-.origen {
-  display: inline-block; margin: 0 0 10px; padding: 6px 14px; border-radius: 999px;
-  background: #e4dcff; color: var(--violeta); font-weight: 700; font-size: .9rem;
-}
-.tarjeta { border-radius: 20px; padding: 22px 20px; border: 3px solid; }
-.tarjeta.rojo     { background: var(--rojo-fondo);     border-color: var(--rojo);     }
-.tarjeta.amarillo { background: var(--amarillo-fondo); border-color: var(--amarillo); }
-.tarjeta.verde    { background: var(--verde-fondo);    border-color: var(--verde);    }
-.tarjeta.rechazo, .tarjeta.error, .tarjeta.vacio { background: var(--gris-fondo); border-color: var(--suave); }
-
-.orden { font-size: 1.45rem; font-weight: 800; line-height: 1.25; margin: 0 0 14px; }
-.rojo .orden { color: var(--rojo); }
-.amarillo .orden { color: var(--amarillo); }
-.verde .orden { color: var(--verde); }
-.porque { font-size: 1.1rem; margin: 0 0 14px; }
-.accion { font-size: 1.15rem; font-weight: 700; margin: 0; }
-
-details { margin-top: 16px; }
-summary { font-size: 1rem; font-weight: 600; cursor: pointer; padding: 10px 0; color: var(--violeta); }
-#detalle-cuerpo h2 { font-size: 1rem; margin: 14px 0 6px; }
-#detalle-cuerpo ul { margin: 0; padding-left: 22px; }
-#detalle-cuerpo li { margin-bottom: 6px; font-size: .95rem; }
-
-footer { margin-top: 32px; color: var(--suave); font-size: .85rem; }
-footer ol { padding-left: 22px; }
-
-@media (prefers-reduced-motion: reduce) { .girando { animation: none; } }
