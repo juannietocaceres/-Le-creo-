@@ -39,6 +39,7 @@ ESTATICOS = {
     "/estilos.css": "text/css; charset=utf-8",
     "/icono-192.png": "image/png",
     "/icono-512.png": "image/png",
+    "/logo.svg": "image/svg+xml",
 }
 SEGURIDAD = {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; "

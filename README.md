@@ -11,15 +11,15 @@ Te llega un mensaje sospechoso por WhatsApp o SMS. Lo compartes con **¿Le creo?
 
 <br>
 
-<img src="docs/img/v2_espera.jpg" width="200" alt="Mientras revisa: el semáforo va pasando de luz en luz y dice qué está revisando">
+<img src="docs/img/v3_inicio.jpg" width="200" alt="Inicio: los tres pasos dibujados para compartir desde WhatsApp">
 &nbsp;
-<img src="docs/img/v2_rojo.jpg" width="200" alt="Resultado rojo con el semáforo encendido y el botón Llamar a Bancolombia">
+<img src="docs/img/v3_rojo.jpg" width="200" alt="Resultado rojo a pantalla completa con el botón Llamar a Bancolombia">
 &nbsp;
-<img src="docs/img/v2_por_que.jpg" width="200" alt="Ver por qué: cada truco con la frase del mensaje que lo prueba">
+<img src="docs/img/v3_por_que.jpg" width="200" alt="Por qué: una línea por hallazgo, con su ícono">
 &nbsp;
-<img src="docs/img/v2_verde_oscuro.jpg" width="200" alt="Aviso real del banco en verde, en modo oscuro">
+<img src="docs/img/v3_verde_oscuro.jpg" width="200" alt="Aviso real del banco en verde, en modo oscuro">
 
-<sub>Capturas reales: mientras revisa · un SMS falso de Bancolombia (🔴) con el botón para llamar a su línea oficial · el porqué · un aviso real del banco (🟢) en modo oscuro.</sub>
+<sub>Capturas reales: el inicio con los pasos dibujados · un SMS falso de Bancolombia a pantalla completa (🔴) con el botón para llamar a su línea oficial · el porqué en una lista · un aviso real del banco (🟢) en modo oscuro.</sub>
 
 </div>
 

@@ -4,6 +4,7 @@
 
 const $ = (id) => document.getElementById(id);
 const secciones = { entrada: $("entrada"), espera: $("espera"), resultado: $("resultado") };
+const SVG = "http://www.w3.org/2000/svg";
 
 // Lo que va diciendo mientras revisa: los pasos reales del agente, en palabras de todos los días.
 const PASOS_ESPERA = [
@@ -14,6 +15,23 @@ const PASOS_ESPERA = [
   "Decidiendo el color del semáforo…",
 ];
 let relojEspera = null;
+
+// Pantalla completa: cada estado pinta el fondo, la etiqueta de arriba y el título del porqué.
+const ESTADOS = {
+  rojo:     { etiqueta: "Parece estafa",           titulo: "Por qué es roja",     barra: "#d21f3c" },
+  amarillo: { etiqueta: "Ten cuidado",             titulo: "Por qué es amarilla", barra: "#f5b700" },
+  verde:    { etiqueta: "Sin señales",             titulo: "Por qué es verde",    barra: "#0e8a57" },
+  rechazo:  { etiqueta: "Fuera de lo que reviso",  titulo: "Detalle",             barra: "#3b3552" },
+  error:    { etiqueta: "No pude revisar",         titulo: "Detalle",             barra: "#3b3552" },
+  vacio:    { etiqueta: "Falta el mensaje",        titulo: "Detalle",             barra: "#3b3552" },
+};
+const COLOR_BARRA_INICIO = "#f4f2f8";
+
+function pintarFondo(semaforo) {
+  if (semaforo) document.body.dataset.estado = ["rojo", "amarillo", "verde"].includes(semaforo) ? semaforo : "neutro";
+  else delete document.body.dataset.estado;
+  $("color-barra").content = semaforo ? (ESTADOS[semaforo] || ESTADOS.error).barra : COLOR_BARRA_INICIO;
+}
 
 function mostrar(nombre) {
   for (const [clave, el] of Object.entries(secciones)) el.hidden = clave !== nombre;
@@ -26,48 +44,87 @@ function mostrar(nombre) {
       $("paso-espera").textContent = PASOS_ESPERA[i];
     }, 1600);
   }
-  if (nombre !== "resultado") callar();
+  if (nombre !== "resultado") {
+    callar();
+    pintarFondo(null);
+  }
+  window.scrollTo(0, 0);
 }
 
-// El semáforo ya muestra el color: el emoji del inicio sobra en pantalla (y se lee raro en voz alta).
+// El fondo y las luces ya dicen el color: el emoji del inicio sobra en pantalla (y se lee raro en voz alta).
 const sinEmoji = (t) => (t || "").replace(/^(?:🔴|🟡|🟢|👉|⚠️)\s*/u, "");
+const mayuscula = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
-function parrafo(texto) {
+function parrafo(texto, clase) {
   const p = document.createElement("p");
   p.textContent = texto;
+  if (clase) p.className = clase;
   return p;
 }
 
-function titulo(texto) {
-  const h = document.createElement("h3");
-  h.textContent = texto;
-  return h;
+// ── Por qué: una línea por hallazgo, con su ícono ─────────────────────────
+
+function icono(nombre) {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("class", "ico");
+  svg.setAttribute("aria-hidden", "true");
+  const uso = document.createElementNS(SVG, "use");
+  uso.setAttribute("href", `#i-${nombre}`);
+  svg.append(uso);
+  return svg;
 }
 
-function lista(items, clase) {
-  const ul = document.createElement("ul");
-  ul.className = clase;
-  for (const item of items) {
-    const li = document.createElement("li");
-    li.textContent = item;
-    ul.append(li);
-  }
-  return ul;
+function iconoDeRevision(texto) {
+  if (/enlace/i.test(texto)) return "enlace";
+  if (/número/i.test(texto)) return "telefono";
+  if (/contacta|canal/i.test(texto)) return "banco";
+  return "lupa";
 }
 
-function trucos(items) {   // cada truco con la frase del mensaje que lo prueba
-  const ul = document.createElement("ul");
-  ul.className = "trucos";
-  for (const t of items) {
-    const li = document.createElement("li");
-    const b = document.createElement("b");
-    b.textContent = t.nombre;
-    const q = document.createElement("q");
-    q.textContent = t.evidencia;
-    li.append(b, q);
-    ul.append(li);
+function iconoDeTruco(nombre) {
+  if (/urgencia|presión|tiempo/i.test(nombre)) return "reloj";
+  if (/familiar|amigo/i.test(nombre)) return "persona";
+  if (/autoridad|entidad|banco/i.test(nombre)) return "banco";
+  if (/enlace/i.test(nombre)) return "enlace";
+  return "alerta";
+}
+
+function hallazgo(nombreIcono, titulo, detalle) {
+  const li = document.createElement("li");
+  const texto = document.createElement("div");
+  const b = document.createElement("b");
+  b.textContent = titulo;
+  texto.append(b);
+  if (detalle) {
+    const span = document.createElement("span");
+    span.textContent = detalle;
+    texto.append(span);
   }
-  return ul;
+  li.append(icono(nombreIcono), texto);
+  return li;
+}
+
+function pintarDetalle(datos) {
+  const cuerpo = $("detalle-cuerpo");
+  cuerpo.replaceChildren();
+  const lista = document.createElement("ul");
+  lista.className = "hallazgos";
+  for (const r of datos.revise || []) {
+    const titulo = /^cómo contacta/i.test(r) ? `Revisé ${r}` : mayuscula(r);   // que se lea como hallazgo
+    lista.append(hallazgo(iconoDeRevision(r), titulo));
+  }
+  for (const t of datos.trucos || []) lista.append(hallazgo(iconoDeTruco(t.nombre), t.nombre, `«${t.evidencia}»`));
+  if (datos.ademas) lista.append(hallazgo("idea", "Además", datos.ademas));
+  if (datos.truncado) lista.append(hallazgo("alerta", "El mensaje era muy largo", "Revisé solo el comienzo."));
+  if (lista.childElementCount) cuerpo.append(lista);
+  if (datos.leido) {
+    cuerpo.append(parrafo(datos.tipo === "audio" ? "Lo que escuché en el audio:" : "Lo que leí en la foto:", "analizado-con"));
+    cuerpo.append(parrafo(datos.leido, "leido"));
+  }
+  if (datos.analizado_con) cuerpo.append(parrafo(`Analizado con ${datos.analizado_con}`, "analizado-con"));
+  $("detalle-titulo").textContent = (ESTADOS[datos.semaforo] || ESTADOS.error).titulo;
+  $("detalle").hidden = true;
+  $("ver-porque").hidden = !cuerpo.childElementCount;
 }
 
 function pintar(datos) {
@@ -75,32 +132,15 @@ function pintar(datos) {
   const accion = resto.length > 1 ? resto[resto.length - 1] : (resto[0] || "");
   const porque = resto.length > 1 ? resto.slice(0, -1).join(" ") : "";
 
-  $("tarjeta").className = `tarjeta ${datos.semaforo}`;
+  pintarFondo(datos.semaforo);
+  $("estado").textContent = (ESTADOS[datos.semaforo] || ESTADOS.error).etiqueta;
   $("orden").textContent = sinEmoji(orden);
   $("porque").textContent = porque;
   $("porque").hidden = !porque;
   $("accion").textContent = sinEmoji(accion);
   $("accion").hidden = !accion;
   pintarAyudas(datos);
-
-  const cuerpo = $("detalle-cuerpo");
-  cuerpo.replaceChildren();
-  if (datos.trucos && datos.trucos.length) cuerpo.append(titulo("El truco que usan"), trucos(datos.trucos));
-  if (datos.ademas) cuerpo.append(titulo("Además"), parrafo(datos.ademas));
-  if (datos.revise && datos.revise.length) cuerpo.append(titulo("Qué revisé"), lista(datos.revise, "revise"));
-  if (datos.truncado) cuerpo.append(parrafo("El mensaje era muy largo: revisé solo el comienzo."));
-  if (datos.leido) {
-    const p = parrafo(datos.leido);
-    p.className = "leido";
-    cuerpo.append(titulo(datos.tipo === "audio" ? "Lo que escuché en el audio" : "Lo que leí en la foto"), p);
-  }
-  if (datos.analizado_con) {
-    const p = parrafo(`Analizado con ${datos.analizado_con}`);
-    p.className = "analizado-con";
-    cuerpo.append(p);
-  }
-  $("detalle").hidden = !cuerpo.childElementCount;
-  $("detalle").open = false;
+  pintarDetalle(datos);
 
   const avisos = $("avisos");
   avisos.replaceChildren(...(datos.avisos || []).map((a) => {
@@ -113,8 +153,12 @@ function pintar(datos) {
   pintarAcciones(datos);
 
   mostrar("resultado");
-  $("tarjeta").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+$("ver-porque").addEventListener("click", () => {
+  $("detalle").hidden = false;
+  $("detalle").scrollIntoView({ behavior: "smooth", block: "start" });
+});
 
 // ── B3: llamar a la línea oficial · B2: escuchar la respuesta ───────────────
 // El número del botón llega aparte desde el servidor y sale de la tabla verificada, nunca del modelo.
@@ -123,11 +167,9 @@ function pintarAyudas(datos) {
   const llamar = $("llamar");
   if (datos.llamar && /^\d{3,15}$/.test(datos.llamar.marcar)) {
     llamar.href = `tel:${datos.llamar.marcar}`;
-    const linea = document.createElement("span");
-    linea.textContent = `📞 Llamar a ${datos.llamar.entidad}`;
     const numero = document.createElement("small");
     numero.textContent = datos.llamar.numero;
-    llamar.replaceChildren(linea, numero);
+    llamar.replaceChildren(document.createTextNode(`Llamar a ${datos.llamar.entidad}`), numero);
     llamar.hidden = false;
   } else {
     llamar.hidden = true;
@@ -192,7 +234,7 @@ function bloqueReporte(analisisId, { numero, permiso }) {
   const inicio = () => {
     bloque.replaceChildren(
       parrafo(`¿Te escribieron desde el ${legible(numero)}?`),
-      boton(`🚩 Reportar este número`, "", confirmar),
+      boton("Reportar este número", "", confirmar),
     );
   };
   const confirmar = () => {
@@ -229,6 +271,8 @@ function pintarAcciones(datos) {
   acciones.hidden = !acciones.childElementCount;
 }
 
+// ── Revisar ────────────────────────────────────────────────────────────────
+
 let ultimo = null;   // lo último que se revisó, para el botón Reintentar tras un timeout
 
 async function revisar(texto) {
@@ -247,7 +291,7 @@ async function revisar(texto) {
     });
     pintar(await resp.json());
   } catch {
-    pintar({ semaforo: "error", lineas: ["⚠️ No pude conectarme. Revisa tu internet e inténtalo de nuevo."] });
+    pintar({ semaforo: "error", lineas: ["No pude conectarme. Revisa tu internet e inténtalo de nuevo."] });
   }
 }
 
@@ -261,7 +305,7 @@ async function revisarCaptura(archivo) {
     const resp = await fetch("/api/analizar_archivo", { method: "POST", body: datos });
     pintar(await resp.json());
   } catch {
-    pintar({ semaforo: "error", lineas: ["⚠️ No pude conectarme. Revisa tu internet e inténtalo de nuevo."] });
+    pintar({ semaforo: "error", lineas: ["No pude conectarme. Revisa tu internet e inténtalo de nuevo."] });
   }
 }
 
@@ -308,10 +352,10 @@ const compartido = JSON.parse($("compartido").textContent);
 if (compartido !== null) {
   history.replaceState(null, "", "/");   // recargar no vuelve a enviar el formulario
   if (compartido.resultado) {
-    marcarOrigen(compartido.origen === "audio" ? "📤 Nota de voz recibida desde WhatsApp" : "📤 Captura recibida desde WhatsApp");
+    marcarOrigen(compartido.origen === "audio" ? "Nota de voz recibida desde WhatsApp" : "Foto recibida desde WhatsApp");
     pintar(compartido.resultado);
   } else {
-    marcarOrigen("📤 Recibido desde WhatsApp");
+    marcarOrigen("Recibido desde WhatsApp");
     $("texto").value = compartido.texto || "";
     revisar(compartido.texto);
   }

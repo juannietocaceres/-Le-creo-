@@ -3,18 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f3f1f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121019" media="(prefers-color-scheme: dark)">
+<meta id="color-barra" name="theme-color" content="#f3f1f7">
 <title>¿Le creo?</title>
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icono-192.png">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="icon" href="/icono-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="/icono-192.png">
 <link rel="stylesheet" href="/estilos.css">
 </head>
 <body>
+
+<!-- Íconos de línea (dibujados aquí: la página no pide nada a otros sitios) -->
+<svg class="sprite" width="0" height="0" aria-hidden="true">
+  <symbol id="i-enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></symbol>
+  <symbol id="i-telefono" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></symbol>
+  <symbol id="i-banco" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></symbol>
+  <symbol id="i-persona" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-lupa" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></symbol>
+  <symbol id="i-idea" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></symbol>
+</svg>
+
 <main>
   <header class="marca">
-    <img src="/icono-192.png" alt="" width="52" height="52">
+    <img src="/logo.svg" alt="" width="48" height="48">
     <div>
       <h1>¿Le creo?</h1>
       <p class="sub">Una segunda opinión antes de pagar</p>
@@ -23,55 +36,76 @@
 
   <section id="entrada" class="pantalla">
     <h2 class="pregunta">¿Te llegó un mensaje raro?</h2>
-    <ol class="pasos" aria-label="Cómo funciona">
-      <li><span class="paso-num">1</span>Me lo compartes o lo pegas</li>
-      <li><span class="paso-num">2</span>Reviso el número y el enlace</li>
-      <li><span class="paso-num">3</span>Te digo qué hacer</li>
+    <ol class="pasos" aria-label="Cómo usarla desde WhatsApp">
+      <li>
+        <svg class="dibujo" viewBox="0 0 46 46" aria-hidden="true"><rect x="4" y="10" width="30" height="14" rx="5" class="d-burbuja"/><rect x="8" y="15" width="18" height="2.5" rx="1" class="d-linea"/><circle cx="30" cy="30" r="9" class="d-toque"/><path d="M28 22v14l3-3 2 5 2-1-2-5h4z" class="d-tinta"/></svg>
+        <div><b><span class="num">1</span>Deja presionado el mensaje</b><span>Una nota de voz o una foto</span></div>
+      </li>
+      <li>
+        <svg class="dibujo" viewBox="0 0 46 46" aria-hidden="true"><rect x="9" y="6" width="28" height="34" rx="6" class="d-hoja"/><circle cx="17" cy="23" r="3" class="d-acento"/><circle cx="29" cy="16" r="3" class="d-acento"/><circle cx="29" cy="30" r="3" class="d-acento"/><path d="M17 23l12-7M17 23l12 7" class="d-traza"/></svg>
+        <div><b><span class="num">2</span>Toca Compartir</b><span>Está en los tres puntos ⋮</span></div>
+      </li>
+      <li>
+        <svg class="dibujo" viewBox="0 0 46 46" aria-hidden="true"><rect x="5" y="9" width="36" height="22" rx="6" class="d-logo"/><path d="M11 30l-1 8 8-7z" class="d-logo"/><text x="23" y="25.5" text-anchor="middle" class="d-signo">¿?</text></svg>
+        <div><b><span class="num">3</span>Elige ¿Le creo?</b><span>Y te digo qué hacer</span></div>
+      </li>
     </ol>
-    <label for="texto" class="etiqueta">El mensaje que te llegó</label>
-    <textarea id="texto" rows="5" placeholder="Pega aquí el mensaje"></textarea>
-    <div class="botones">
-      <button id="revisar" type="button" class="grande principal">Revisar mensaje</button>
-      <button id="pegar" type="button" class="grande secundario"><span aria-hidden="true">📋</span> Pegar y revisar</button>
-      <label class="grande secundario boton-archivo">
-        <span aria-hidden="true">📷</span> Revisar foto o audio
-        <input id="captura" type="file" accept="image/png,image/jpeg,image/webp,audio/*,.opus,.ogg,.m4a" hidden>
-      </label>
+
+    <div class="pegar-caja">
+      <label for="texto" class="etiqueta">¿Es un mensaje de texto? Pégalo aquí</label>
+      <textarea id="texto" rows="4" placeholder="Pega aquí el mensaje que te llegó"></textarea>
+      <div class="botones">
+        <button id="revisar" type="button" class="grande principal">Revisar mensaje</button>
+        <button id="pegar" type="button" class="grande secundario">Pegar y revisar</button>
+        <label class="grande secundario boton-archivo">
+          Revisar foto o audio
+          <input id="captura" type="file" accept="image/png,image/jpeg,image/webp,audio/*,.opus,.ogg,.m4a" hidden>
+        </label>
+      </div>
     </div>
   </section>
 
   <section id="espera" class="pantalla espera" hidden aria-live="polite">
-    <div class="semaforo grande-semaforo ciclo" aria-hidden="true"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>
+    <div class="semaforo ciclo" aria-hidden="true"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>
     <p id="paso-espera" class="paso-espera">Leyendo el mensaje…</p>
     <p class="nota">Tarda unos segundos.</p>
   </section>
 
-  <section id="resultado" class="pantalla" hidden aria-live="polite">
-    <p id="origen" class="origen" hidden></p>
-    <article id="tarjeta" class="tarjeta">
-      <div class="senal">
-        <div class="semaforo" aria-hidden="true"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>
-        <p id="orden" class="orden"></p>
+  <section id="resultado" hidden aria-live="polite">
+    <div id="hoja" class="hoja">
+      <div class="hoja-arriba">
+        <span class="marca-mini">¿Le creo?</span>
+        <span id="estado" class="estado"></span>
       </div>
+      <p id="origen" class="origen" hidden></p>
+      <div class="luces" aria-hidden="true"><span class="luz r"></span><span class="luz a"></span><span class="luz v"></span></div>
+      <h2 id="orden" class="orden"></h2>
       <p id="porque" class="porque"></p>
       <p id="accion" class="accion"></p>
-    </article>
-    <div class="ayudas">
-      <a id="llamar" class="grande llamar" hidden></a>
-      <button id="escuchar" type="button" class="grande secundario" hidden><span aria-hidden="true">🔊</span> <span id="escuchar-texto">Escuchar</span></button>
+      <div class="pildoras">
+        <a id="llamar" class="pildora llena" hidden></a>
+        <div class="fila-pildoras">
+          <button id="escuchar" type="button" class="pildora borde" hidden><span id="escuchar-texto">Escuchar</span></button>
+          <button id="ver-porque" type="button" class="pildora borde" hidden>Por qué</button>
+        </div>
+      </div>
     </div>
-    <div id="acciones" class="acciones" hidden></div>
-    <ul id="avisos" class="avisos" hidden></ul>
-    <button id="reintentar" type="button" class="grande principal" hidden>Reintentar</button>
-    <details id="detalle">
-      <summary>Ver por qué</summary>
-      <div id="detalle-cuerpo"></div>
-    </details>
-    <button id="otro" type="button" class="grande secundario">Revisar otro mensaje</button>
+
+    <div class="debajo">
+      <ul id="avisos" class="avisos" hidden></ul>
+      <button id="reintentar" type="button" class="grande principal" hidden>Reintentar</button>
+      <section id="detalle" class="detalle" hidden>
+        <h3 id="detalle-titulo">Por qué</h3>
+        <div id="detalle-cuerpo"></div>
+      </section>
+      <div id="acciones" class="acciones" hidden></div>
+      <button id="otro" type="button" class="grande secundario">Revisar otro mensaje</button>
+      <p class="nota">No abrí ningún enlace y no guardé tu mensaje.</p>
+    </div>
   </section>
 
   <footer>
-    <p class="privacidad"><span aria-hidden="true">🔒</span> No abro los enlaces y no guardo tus mensajes.</p>
+    <p class="privacidad">No abro los enlaces y no guardo tus mensajes.</p>
     <details>
       <summary>¿Cómo la pongo en el celular?</summary>
       <ol>
