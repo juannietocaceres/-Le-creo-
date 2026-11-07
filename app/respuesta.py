@@ -5,7 +5,9 @@ y Telegram lo interpretaría como formato HTML.
 """
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from html import escape
 
 from app.contrato import ResultadoAgente
@@ -25,7 +27,7 @@ MENSAJES_ERROR = {
 # D19: la primera línea la decide el código según el color, igual que el semáforo.
 ORDENES = {
     "rojo":     "🔴 NO pagues ni abras enlaces. Parece una estafa.",
-    "amarillo": "🟡 Espera antes de pagar o responder: tiene señales sospechosas.",
+    "amarillo": "🟡 Espera: no pude confirmar que sea real.",
     "verde":    "🟢 No vimos señales de estafa.",
 }
 
@@ -73,6 +75,34 @@ def _despejado(r: ResultadoAgente, semaforo: str) -> bool:
     return bool(semaforo == "verde" and r.contrato and r.contrato.tacticas and _entidad_de_enlace_oficial(r))
 
 
+_NOMBRES_TACTICAS = {t["id"]: t["nombre"] for t in json.loads(
+    (Path(__file__).resolve().parent.parent / "data" / "tacticas.json").read_text(encoding="utf-8"))}
+
+
+def _dudas(r: ResultadoAgente, maximo: int = 3) -> list[str]:
+    """Lo que dejó el mensaje en amarillo, en palabras simples y sacado de datos, no del modelo."""
+    c = r.contrato
+    dudas: list[str] = []
+    if c and "transferencia" in c.pide:
+        dudas.append("te piden pagar o transferir dinero")
+    oficial = _entidad_de_enlace_oficial(r)
+    for h in r.herramientas:
+        res = h.resultado if isinstance(h.resultado, dict) else {}
+        if h.nombre != "revisar_enlace" or res.get("es_oficial") or not res.get("dominio"):
+            continue
+        if res.get("imita_a"):
+            dudas.append(f"el enlace {res['dominio']} se parece al de {res['imita_a']}, pero no es el suyo")
+        elif res.get("es_acortador"):
+            dudas.append(f"el enlace {res['dominio']} esconde a dónde lleva")
+        else:
+            dudas.append(f"el enlace {res['dominio']} no es de ninguna entidad que yo pueda comprobar")
+    for t in (c.tacticas if c else []):
+        if t.id == "enlace_disfrazado" and (oficial or any("enlace" in d for d in dudas)):
+            continue
+        dudas.append(f"se parece al truco «{_NOMBRES_TACTICAS.get(t.id, t.id).lower()}»")
+    return dudas[:maximo]
+
+
 def _oficial_que_cobra(r: ResultadoAgente, semaforo: str) -> str | None:
     """Amarillo con enlace oficial: el cobro puede ser real, pero se revisa en la app, no en el mensaje.
     Devuelve la entidad para que la explicación no acuse de 'inventar' algo que el dato no muestra."""
@@ -103,6 +133,10 @@ def resumen(r: ResultadoAgente, semaforo: str) -> list[str]:
         lineas.append(f"El enlace sí es de {entidad_cobra} (dominio oficial comprobado), pero te piden pagar o "
                       f"entregar algo. Si el cobro es real, también aparece en la app de {entidad_cobra}: "
                       "revísalo ahí y no desde el mensaje.")
+    elif semaforo == "amarillo" and (dudas := _dudas(r)):
+        # Amarillo = duda, no condena: se dice qué hizo dudar, sin el "te inventan…" del modelo.
+        lineas.append("No tengo pruebas de que sea estafa, pero tampoco de que sea real. Me hizo dudar: "
+                      + "; ".join(dudas) + ".")
     elif c and c.explicacion:
         lineas.append(c.explicacion)
 

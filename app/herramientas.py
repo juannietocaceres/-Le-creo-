@@ -37,6 +37,7 @@ def revisar_enlace(url: str) -> dict[str, Any]:
     dueno = next((e for d, e in oficiales if dominio == d or dominio.endswith("." + d)), None)
     es_oficial = dueno is not None
     imita_a: str | None = None
+    imitacion_fuerte = False  # débil = marca corta pegada a otra palabra ('exitosa.com'): da duda, no condena
     motivos: list[str] = []
 
     usa_arroba = "@" in url.split("//", 1)[-1].split("/", 1)[0]
@@ -49,6 +50,7 @@ def revisar_enlace(url: str) -> dict[str, Any]:
             marca = dom_oficial.split(".")[0]  # "bancolombia.com" → "bancolombia"
             if _contiene_marca(dominio, marca):
                 imita_a = entidad
+                imitacion_fuerte = len(marca) >= 6 or _es_palabra(dominio, marca)
                 motivos.append(f"contiene '{marca}' pero no es {dom_oficial}")
                 break
 
@@ -62,6 +64,7 @@ def revisar_enlace(url: str) -> dict[str, Any]:
                 tope = 1 if len(marca) < 8 else 2
                 if _levenshtein(base, marca) <= tope:
                     imita_a = entidad
+                    imitacion_fuerte = len(marca) >= 6
                     motivos.append(f"muy parecido a {dom_oficial} (distancia ≤ {tope})")
                     break
 
@@ -82,6 +85,7 @@ def revisar_enlace(url: str) -> dict[str, Any]:
         "es_oficial":   es_oficial,
         "entidad":      dueno,
         "imita_a":      imita_a,
+        "imitacion_fuerte": imitacion_fuerte,
         "es_acortador": acortador,
         "sospechoso":   sospechoso,
         "motivo":       "; ".join(motivos) if motivos else "ninguno",
@@ -103,6 +107,11 @@ def _extraer_dominio(url: str) -> str:
     return url
 
 
+def _es_palabra(dominio: str, marca: str) -> bool:
+    """La marca aparece como palabra completa del dominio: 'claro-pagos.co' sí, 'clarovideo.com' no."""
+    return re.search(r"(^|[.\-])" + re.escape(marca) + r"($|[.\-])", dominio) is not None
+
+
 def _contiene_marca(dominio: str, marca: str) -> bool:
     """Marcas largas: en cualquier parte. Cortas (<6): solo al inicio de una etiqueta
     o tras un guion, para no confundir 'meridian.com' con DIAN."""
@@ -110,6 +119,8 @@ def _contiene_marca(dominio: str, marca: str) -> bool:
         return False
     if len(marca) >= 6:
         return marca in dominio
+    if len(marca) == 3:  # 'etb', 'epm', 'tcc': solo como palabra completa ('epm-pagos.co', no 'epmarketing.com')
+        return _es_palabra(dominio, marca)
     return re.search(r"(^|[.\-])" + re.escape(marca), dominio) is not None
 
 

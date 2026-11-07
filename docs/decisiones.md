@@ -179,3 +179,33 @@ Detalle: `decisiones/publico_y_canal.md`.
 - **Qué cambió en el texto:** si todos los enlaces son oficiales, la explicación ya no acusa. Dice que el enlace sí es de la entidad y que, si el cobro es real, también aparece en su app: hay que revisarlo ahí y no desde el mensaje. El truco "enlace disfrazado" no se muestra cuando el dato lo contradice.
 - **Por qué `didiglobal.com` es oficial:** el sitio de DiDi Colombia está en `web.didiglobal.com/co` y el dominio usa los servidores de nombres de DiDi (`didiwuxian.com`).
 - **Suite v7_didi:** 14/14, recuperación 15/15.
+
+## Sin certeza no hay verde, y el amarillo no acusa (2026-11-07)
+
+**Principio (Diego):** 🟢 solo cuando hay pruebas de que es seguro. Con dudas, 🟡. El amarillo explica la duda, no condena.
+
+**Qué cambió:**
+
+1. **Enlaces sin certeza:** un enlace que no está en la tabla oficial, o que el agente no alcanzó a revisar, deja el mensaje en 🟡 aunque el modelo no haya visto tácticas. Antes podía salir 🟢.
+2. **Texto del amarillo:** el titular es "🟡 Espera: no pude confirmar que sea real.". La explicación ya no es la del modelo ("te inventan…"). Se arma con datos: "No tengo pruebas de que sea estafa, pero tampoco de que sea real. Me hizo dudar: …", con lo que se pide, los enlaces sin verificar y los trucos. La acción 👉 sigue siendo firme.
+3. **Tabla oficial:** pasó de 13 a 45 entidades (bancos, telcos, servicios públicos, apps, transportadoras, EPS y entidades públicas). Cada dominio se comprobó el 2026-11-07: responde, a dónde redirige, título y servidores de nombres.
+   - Hallazgos: Movistar ahora es Tigo, y scotiabankcolpatria.com redirige a davibank.com.
+   - Fuera: WOM y coordinadora.com.co (no respondieron); SIMIT (`fcm.org.co`) y Amazon (sus marcas chocan con `fcm.googleapis.com` y `amazonaws.com`).
+   - Los canales nuevos no traen línea telefónica (no la verificamos), así que no muestran botón Llamar.
+4. **Imitación débil:**
+
+   | Caso | Antes | Ahora |
+   |---|---|---|
+   | Marca corta pegada a otra palabra (`exitosa.com`, `claroscuro.com`) | 🔴 imitación | 🟡 "se parece al de X" |
+   | Marca corta como palabra completa (`claro-pagos.co`) | 🔴 | 🔴 |
+   | Marca larga (`netflixlogin.co`) | 🔴 | 🔴 |
+   | Marca de 3 letras (ETB, EPM, TCC) | prefijo | solo como palabra completa |
+
+   Costo aceptado: `nequicolombia.com` baja de 🔴 a 🟡, y `movistarplus.es` (Movistar España) sale 🔴.
+
+**Medición:**
+- Prueba de choques: 34 dominios legítimos y de estafa (en el registro de la sesión).
+- Suite v8_certeza: 28/28 en 2 repeticiones, recuperación 30/30.
+- 230 tests.
+
+**Límite honesto:** la suite sigue siendo casi toda inventada. La cifra que vale para M3 sale de C5, con mensajes reales recogidos por el equipo.

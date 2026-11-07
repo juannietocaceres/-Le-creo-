@@ -152,3 +152,28 @@ def test_enlace_oficial_pero_con_telefono_no_es_verde():
 
 def test_enlace_no_oficial_sigue_amarillo():
     assert _giro(oficial=False) == "amarillo"
+
+
+def test_sin_certeza_no_hay_verde_enlace_desconocido():
+    """Sin tácticas, pero con un enlace que no está en la tabla: amarillo, nunca verde."""
+    contrato = ContratoSalida(enlaces=["tienda-ejemplo.co/x"])
+    h = [_h("revisar_enlace", {"dominio": "tienda-ejemplo.co", "es_oficial": False, "imita_a": None,
+                               "es_acortador": False, "sospechoso": False, "motivo": "ninguno"})]
+    semaforo, senales = calcular_semaforo(contrato, h)
+    assert semaforo == "amarillo" and any("sin verificar" in s for s in senales)
+
+
+def test_sin_certeza_no_hay_verde_enlace_sin_revisar():
+    semaforo, _ = calcular_semaforo(ContratoSalida(enlaces=["algo.co/x"]), [])
+    assert semaforo == "amarillo"
+
+
+def test_mensaje_sin_enlaces_ni_tacticas_sigue_verde():
+    assert calcular_semaforo(ContratoSalida(), [])[0] == "verde"
+
+
+def test_imitacion_debil_da_amarillo_no_rojo():
+    contrato = ContratoSalida(enlaces=["exitosa.com/x"])
+    h = [_h("revisar_enlace", {"dominio": "exitosa.com", "es_oficial": False, "imita_a": "Éxito",
+                               "imitacion_fuerte": False, "es_acortador": False})]
+    assert calcular_semaforo(contrato, h)[0] == "amarillo"

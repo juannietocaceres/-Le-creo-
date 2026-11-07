@@ -147,7 +147,7 @@ def test_amarillo_con_enlace_oficial_no_acusa_y_manda_a_la_app():
     assert [t["nombre"] for t in web["trucos"]] == ["Pago anticipado"]
 
 
-def test_amarillo_con_un_enlace_no_oficial_conserva_la_explicacion():
+def test_amarillo_con_un_enlace_no_oficial_explica_la_duda_sin_acusar():
     from app.contrato import ContratoSalida, LlamadaHerramienta
     from app.agente import ResultadoAgente
     from app import respuesta
@@ -156,4 +156,5 @@ def test_amarillo_con_un_enlace_no_oficial_conserva_la_explicacion():
                             resultado={"dominio": d, "es_oficial": o, "entidad": "DiDi" if o else None})
          for d, o in [("didiglobal.com", True), ("didi-pagos.xyz", False)]]
     web = respuesta.para_web(ResultadoAgente(contrato=c, herramientas=h), "amarillo")
-    assert "Te inventan un cobro." in web["lineas"]
+    texto = " ".join(web["lineas"])
+    assert "inventan" not in texto and "didi-pagos.xyz" in texto and "No tengo pruebas" in texto

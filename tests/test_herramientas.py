@@ -100,3 +100,11 @@ def test_marca_de_dos_letras_no_marca_dominios_ajenos():
     """'wu' (Western Union) no puede volver sospechoso a cualquier dominio que empiece por 'wu'."""
     from app.herramientas import _contiene_marca
     assert not _contiene_marca("wunderlist.com", "wu")
+
+
+def test_marca_corta_como_palabra_es_imitacion_fuerte_y_pegada_es_debil():
+    """'claro-pagos.co' condena; 'claroscuro.com' solo da duda (amarillo), no rojo."""
+    from app.herramientas import _contiene_marca, _es_palabra
+    assert _contiene_marca("claro-pagos.co", "claro") and _es_palabra("claro-pagos.co", "claro")
+    assert _contiene_marca("claroscuro.com", "claro") and not _es_palabra("claroscuro.com", "claro")
+    assert not _contiene_marca("epmarketing.com", "epm")

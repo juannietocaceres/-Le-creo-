@@ -54,8 +54,10 @@ def calcular_semaforo(
                 enlaces_oficiales += 1
             if r.get("dominio") and not r.get("es_oficial"):
                 enlaces_no_oficiales.append(r["dominio"])
-            if r.get("imita_a"):
+            if r.get("imita_a") and r.get("imitacion_fuerte", True):
                 senales_duras.append(f"enlace imita a {r['imita_a']}: {r.get('dominio', '')}")
+            elif r.get("imita_a"):
+                senales_blandas.append(f"enlace parecido a {r['imita_a']}: {r.get('dominio', '')}")
             elif r.get("es_acortador"):
                 senales_blandas.append(f"enlace acortador: {r.get('dominio', '')}")
 
@@ -89,6 +91,14 @@ def calcular_semaforo(
             senales_duras.append(
                 f"dice ser {contrato.entidad_suplantada} pero da un contacto que no es el oficial: {', '.join(ajenos)}"
             )
+
+    # Sin certeza no hay verde: un enlace que no está en la tabla oficial (o que el agente no
+    # alcanzó a revisar) deja el mensaje en amarillo aunque el modelo no haya visto tácticas.
+    for dominio in enlaces_no_oficiales:
+        senales_blandas.append(f"enlace sin verificar: {dominio}")
+    revisados = enlaces_oficiales + len(enlaces_no_oficiales)
+    if len(contrato.enlaces) > revisados:
+        senales_blandas.append(f"{len(contrato.enlaces) - revisados} enlace(s) sin revisar")
 
     # Tácticas fuertes
     tacticas_fuertes_detectadas = [
