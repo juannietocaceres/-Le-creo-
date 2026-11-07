@@ -82,6 +82,27 @@
 | B5 | 🌐 Link fijo: publicar en una capa gratuita **sin tarjeta** para no reinstalar cada vez | Por asignar | ¿Se verificó que el servicio es gratis sin tarjeta y la app instalada sigue funcionando al día siguiente? | Por verificar (si no hay opción sin tarjeta, se descarta y se documenta) |
 | B6 | 📊 Panel para la familia: números más reportados de la semana y estafas frenadas, con datos agregados | Por asignar | ¿Muestra solo agregados de la base, sin ningún texto de mensajes? | Pendiente |
 
+| B7 | Elegir y aplicar una dirección visual más auténtica y llamativa. Opciones evaluadas el 2026-11-06: **Señal de tránsito** (amarillo vial sobre asfalto, recomendada: es el mundo real del semáforo y tiene el contraste más alto), **Billete de seguridad** (verde billete, tinta azul y sello "FALSO/REVISADO"), **Noche de neón** (la marca de la presentación) y **Alto contraste** (blanco, negro y azul) | Diego decide | ¿La dirección elegida pasa contraste AA en claro y oscuro, y hay capturas antes/después? | Espera la decisión |
+
+### C. Robustez: lo normal de una app en producción (pendiente)
+
+> Pedido el 2026-11-06. **Ojo con el público:** la persona mayor **nunca** debe necesitar cuenta para revisar un mensaje; eso le pondría la misma barrera que hizo descartar Telegram. Las cuentas son para el **familiar que cuida**. Todo con costo cero y sin guardar el texto de los mensajes (regla 3).
+
+| ID | Tarea | Dueño | Criterio (sí/no) | Estado |
+|---|---|---|---|---|
+| **R1** ⭐ | Cuentas para el familiar: registro e ingreso con **passkey** (WebAuthn: huella o PIN del celular, gratis y sin contraseñas que robar) y, de respaldo, correo + contraseña con hash **argon2**; sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, con protección CSRF y cierre de sesión | Por asignar | ¿Revisar un mensaje sigue funcionando **sin cuenta**, ninguna contraseña se guarda en texto plano y hay tests de registro, ingreso, sesión vencida y cierre? | Pendiente |
+| R2 | Vincular a la familia: el familiar invita a su persona mayor con un código o QR; con 🔴 le llega el aviso (une con B4) | Por asignar | ¿El vínculo exige el consentimiento de la persona mayor, se puede deshacer, y el aviso nunca incluye el texto del mensaje? | Pendiente |
+| R3 | Anti-abuso de "Reportar": un estafador podría reportar números legítimos. Límite de reportes por cuenta y por dispositivo, y que solo cuenten reportes de cuentas distintas | Por asignar | ¿Un mismo usuario o dispositivo no puede llevar un número a "peligroso" solo, con test? | Pendiente |
+| R4 | Límites de uso por usuario y por IP (hoy hay uno global de 5 por minuto), para que nadie gaste el cupo gratuito de la IA | Por asignar | ¿Un usuario que abusa recibe un mensaje claro y los demás siguen funcionando? | Pendiente |
+| R5 | Despliegue robusto: la app en su propio contenedor (`Dockerfile`) y `docker compose up --build` levanta todo; endpoint `/salud`; HTTPS (une con B5) | Por asignar | ¿En un PC limpio, `docker compose up --build` deja la app arriba en menos de 5 minutos? | Pendiente |
+| R6 | Observabilidad: registros estructurados (JSON, sin texto de mensajes), conteo de errores 429/timeout por hora y alerta si se disparan | Por asignar | ¿Se puede ver cuántos análisis fallaron hoy y por qué, sin abrir las trazas una por una? | Pendiente |
+| R7 | Integración continua gratis con GitHub Actions: pruebas y revisión de estilo en cada push | Por asignar | ¿Un push con una prueba rota queda marcado en rojo en GitHub? | Pendiente |
+| R8 | Base de datos seria: migraciones versionadas y respaldo diario | Por asignar | ¿Se puede recrear la base desde cero con las migraciones y restaurar un respaldo? | Pendiente |
+| R9 | Accesibilidad verificada: contraste AA, lector de pantalla (TalkBack) y letra ajustable | Por asignar | ¿Una revisión con TalkBack en Android lee el resultado completo en orden? | Pendiente |
+| R10 | Pruebas de punta a punta en el navegador (Playwright): pegar, revisar, reportar, escuchar | Por asignar | ¿Corren en CI y fallan si se rompe el flujo principal? | Pendiente |
+
+**Antes de R1 hay que decidir y documentar en `docs/gobernanza.md`:** qué datos guarda una cuenta (solo correo o passkey y el vínculo familiar), cuánto tiempo, cómo se borra, y por qué la persona mayor no necesita cuenta. Si los datos de una cuenta se filtran, ¿qué se pierde?
+
 ### Orden propuesto
 
 1. **Semana 12:** B1 + B2 + B3. Es lo que más cambia la impresión, y C8 debe hacerse con la versión nueva.
