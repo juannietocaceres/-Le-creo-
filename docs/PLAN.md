@@ -67,7 +67,7 @@
 | G1 | Ficha de gobernanza: las cinco preguntas respondidas con lo que el sistema hace **de verdad** | Por asignar | ¿Cada respuesta enlaza la línea de código que la demuestra (p. ej. `app/aprobacion.py` para la supervisión humana)? | Pendiente |
 | G2 | Respuesta a la auditoría cruzada | Por asignar | ¿Cada hallazgo de `docs/respuesta_auditoria.md` tiene respuesta argumentada ("lo arreglamos" con commit, o "lo asumimos y por qué")? | Espera el reporte del otro equipo |
 | C8 | Prueba con un adulto mayor real (guía: `docs/guias/c8_prueba_adulto_mayor.md`), **después** de B1 | Anderson / Angela | ¿La tabla "Qué tuvimos que explicar / Qué cambiamos" de `semana09.md` está llena? | Pendiente |
-| C5 | Casos reales: reemplazar o ampliar los 12 casos inventados con mensajes reales anonimizados | Anderson | ¿`eval/casos.jsonl` tiene casos reales verificados a mano, con números ficticios? | Pendiente |
+| C5 | Casos reales: 30 mensajes reales anonimizados (≥12 estafas, ≥12 legítimos), guía en `docs/guias/c5_casos_reales.md` | Diego, Anderson, Angela (10 c/u) | ¿`eval/casos_reales.jsonl` pasa `scripts/validar_casos_reales.py` con ≥30 casos y la suite reporta estafas en verde y legítimos en rojo? | ⚠️ 2/30 (r01, r02 de Diego); guía, validador y modo `--casos` listos 2026-11-10 |
 | M1 | Cifras finales con los casos reales, comparadas contra la línea base de la semana 10 | Por asignar | ¿`docs/decisiones.md` muestra las cuatro cifras finales al lado de la línea base, con fecha y qué cambió y por qué? | Pendiente |
 | M2 | Pendientes de medición: suite completa con Groq (pausa de 65 s) y probar un modelo más barato | Por asignar | ¿Hay un resultado guardado en `eval/resultados/` para cada uno? | Pendiente |
 

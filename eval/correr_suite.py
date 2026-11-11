@@ -34,8 +34,24 @@ RESULTADOS = RAIZ / "eval" / "resultados"
 ESPERA_TRAS_429 = 30
 
 
-def cargar_casos() -> list[dict[str, Any]]:
-    return [json.loads(l) for l in CASOS.read_text(encoding="utf-8").splitlines() if l.strip()]
+def cargar_casos(ruta: Path = CASOS) -> list[dict[str, Any]]:
+    return [json.loads(l) for l in ruta.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def esperado_de(caso: dict[str, Any]) -> str:
+    """Casos inventados: el semáforo esperado. Casos reales (C5): solo se sabe si era estafa."""
+    if "es_estafa" in caso:
+        return "estafa" if caso["es_estafa"] else "legitimo"
+    return caso["esperado"]["semaforo"]
+
+
+def es_acierto(esperado: str, obtenido: str) -> bool:
+    """Real: una estafa debe alertar (rojo o amarillo); un legítimo no debe salir rojo (amarillo = duda, válido)."""
+    if esperado == "estafa":
+        return obtenido in {"rojo", "amarillo"}
+    if esperado == "legitimo":
+        return obtenido in {"verde", "amarillo"}
+    return obtenido == esperado
 
 
 def recuperacion_cumplida(esperada: dict[str, Any], resultado: ResultadoAgente) -> bool:
@@ -48,14 +64,14 @@ def recuperacion_cumplida(esperada: dict[str, Any], resultado: ResultadoAgente) 
 
 
 def evaluar_caso(caso: dict[str, Any], resultado: ResultadoAgente, semaforo: str) -> dict[str, Any]:
-    esperado = caso["esperado"]["semaforo"]
+    esperado = esperado_de(caso)
     recuperacion = [{"esperada": e, "cumplida": recuperacion_cumplida(e, resultado)} for e in caso.get("recuperacion", [])]
     necesarias = {e["herramienta"] for e in caso.get("recuperacion", [])}
     return {
         "id": caso["id"],
         "esperado": esperado,
         "obtenido": semaforo,
-        "acierto": semaforo == esperado,
+        "acierto": es_acierto(esperado, semaforo),
         "error": resultado.error,
         "latencia_ms": resultado.latencia_ms,
         "tokens_in": resultado.tokens_in,
@@ -64,7 +80,9 @@ def evaluar_caso(caso: dict[str, Any], resultado: ResultadoAgente, semaforo: str
         "herramientas": [{"nombre": h.nombre, "parametros": h.parametros} for h in resultado.herramientas],
         "recuperacion": recuperacion,
         # D16: herramientas consultadas que el caso no necesitaba (gastan tokens y tiempo)
-        "llamadas_de_mas": [h.nombre for h in resultado.herramientas if h.nombre not in necesarias],
+        # En casos reales (C5) nadie fijó qué debía consultar: no se cuentan llamadas de más.
+        "llamadas_de_mas": [] if "es_estafa" in caso else
+                           [h.nombre for h in resultado.herramientas if h.nombre not in necesarias],
         # Lo que escribió el modelo (los casos son ficticios), para revisar el tono: p. ej. "robes" por "roben"
         "explicacion": resultado.contrato.explicacion if resultado.contrato else None,
         "que_hacer": resultado.contrato.que_hacer if resultado.contrato else None,
@@ -112,6 +130,25 @@ def calcular_cifras(registros: list[dict[str, Any]], modelo: str, precios: dict[
             "de_mas_porcentaje": round(100 * de_mas / llamadas, 1) if llamadas else 0.0,
         },
         "tokens_por_caso": round(statistics.mean(r["tokens_in"] + r["tokens_out"] for r in registros)) if total else 0,
+        "casos_reales": cifras_reales(registros),
+    }
+
+
+def cifras_reales(registros: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """C5: lo que importa con mensajes reales. Lo más grave: una estafa en verde y un legítimo en rojo."""
+    estafas = [r["obtenido"] for r in registros if r["esperado"] == "estafa"]
+    legitimos = [r["obtenido"] for r in registros if r["esperado"] == "legitimo"]
+    if not estafas and not legitimos:
+        return None
+    return {
+        "estafas": len(estafas),
+        "estafas_con_alerta": sum(o in {"rojo", "amarillo"} for o in estafas),
+        "estafas_en_rojo": estafas.count("rojo"),
+        "estafas_en_verde": estafas.count("verde"),
+        "legitimos": len(legitimos),
+        "legitimos_en_verde": legitimos.count("verde"),
+        "legitimos_en_amarillo": legitimos.count("amarillo"),
+        "legitimos_en_rojo": legitimos.count("rojo"),
     }
 
 
@@ -124,8 +161,9 @@ def analizar_con_reintento(texto: str) -> ResultadoAgente:
     return resultado
 
 
-def main(pausa: float = 3, repeticiones: int = 1, etiqueta: str = "") -> int:
-    casos = cargar_casos()
+def main(pausa: float = 3, repeticiones: int = 1, etiqueta: str = "", ruta: Path = CASOS) -> int:
+    sys.stdout.reconfigure(encoding="utf-8")  # la consola de Windows no imprime ✓ ni emojis
+    casos = cargar_casos(ruta)
     precios = json.loads(PRECIOS.read_text(encoding="utf-8"))
     modelo = config.modelo()
     inicio = datetime.now()
@@ -157,6 +195,7 @@ def main(pausa: float = 3, repeticiones: int = 1, etiqueta: str = "") -> int:
         "etiqueta": etiqueta,
         "proveedor": config.PROVEEDOR,
         "modelo": modelo,
+        "archivo_casos": ruta.name,
         "casos": len(casos),
         "repeticiones": repeticiones,
         # El texto exacto de las descripciones usadas: cada resultado es reproducible y comparable (D16).
@@ -181,6 +220,11 @@ def main(pausa: float = 3, repeticiones: int = 1, etiqueta: str = "") -> int:
     h = c["herramientas"]
     print(f"  Herramientas:      {h['llamadas_por_caso']} llamadas por caso · {h['de_mas']} de más ({h['de_mas_porcentaje']} %) "
           f"· {c['tokens_por_caso']} tokens por caso")
+    if c["casos_reales"]:
+        x = c["casos_reales"]
+        print(f"  Casos reales:      estafas con alerta {x['estafas_con_alerta']}/{x['estafas']} "
+              f"(en rojo {x['estafas_en_rojo']}, EN VERDE {x['estafas_en_verde']}) · legítimos en verde "
+              f"{x['legitimos_en_verde']}/{x['legitimos']} (amarillo {x['legitimos_en_amarillo']}, EN ROJO {x['legitimos_en_rojo']})")
     print(f"\nGuardado en {archivo.relative_to(RAIZ)}")
     return 0
 
@@ -190,5 +234,6 @@ if __name__ == "__main__":
     parser.add_argument("pausa", nargs="?", type=float, default=3, help="segundos entre casos")
     parser.add_argument("--repeticiones", type=int, default=1, help="veces que se corre la suite completa")
     parser.add_argument("--etiqueta", default="", help="nombre de la versión que se mide (p. ej. v1)")
+    parser.add_argument("--casos", type=Path, default=CASOS, help="archivo de casos (p. ej. eval/casos_reales.jsonl)")
     args = parser.parse_args()
-    sys.exit(main(args.pausa, args.repeticiones, args.etiqueta))
+    sys.exit(main(args.pausa, args.repeticiones, args.etiqueta, args.casos.resolve()))

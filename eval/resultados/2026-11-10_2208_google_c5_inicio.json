@@ -1,0 +1,113 @@
+{
+  "fecha": "2026-11-10T22:08:09",
+  "etiqueta": "c5_inicio",
+  "proveedor": "google",
+  "modelo": "gemini-3.5-flash-lite",
+  "archivo_casos": "casos_reales.jsonl",
+  "casos": 2,
+  "repeticiones": 1,
+  "descripciones": {
+    "buscar_numero": "Úsala con cada número de teléfono o celular que aparezca escrito en el mensaje, aunque venga con espacios o sin +57 (ej. '300 000 0007'), o si la persona dice desde qué número le escribieron. Consulta cuántas veces lo han reportado. No la uses si el mensaje no trae ningún teléfono, ni con montos de dinero, códigos de verificación, números de guía, de cuenta, de tarjeta o de cédula.",
+    "canal_oficial": "Úsala siempre que el mensaje diga venir de una entidad o hable en su nombre ('Bancolombia le informa', 'NEQUI:', 'Servientrega: su paquete'): un banco, una billetera, una transportadora, la DIAN o la Policía, sea el mensaje sospechoso o no. Devuelve cómo contacta de verdad esa entidad y qué nunca pide. No la uses si la entidad solo aparece como el medio donde piden la plata ('mándame al Nequi'), ni si el mensaje no menciona ninguna entidad.",
+    "revisar_enlace": "Úsala con cada enlace o dirección web que aparezca escrito en el mensaje, aunque no empiece por http o www (ej. 'bit.ly/abc', 'pagos-dian.co/pagar'). Revisa solo el texto: si imita un dominio oficial, si es un acortador o si tiene caracteres engañosos. No abre el enlace ni descarga nada. No la uses si el mensaje no trae ningún enlace escrito (por ejemplo, si solo dice 'haz clic aquí' o 'te envío el link'), ni con correos electrónicos."
+  },
+  "cifras": {
+    "tasa_exito": {
+      "aciertos": 2,
+      "total": 2,
+      "porcentaje": 100.0
+    },
+    "costo_por_tarea": {
+      "promedio_usd": 0.001905,
+      "total_usd": 0.003811,
+      "costo_real_usd": 0.0,
+      "precio_usado": {
+        "entrada_usd_por_millon": 0.3,
+        "salida_usd_por_millon": 2.5,
+        "nota": "Precio estándar (capa paga). La salida incluye los tokens de razonamiento.",
+        "fuente": "https://ai.google.dev/gemini-api/docs/pricing",
+        "consultado": "2026-10-30"
+      }
+    },
+    "latencia": {
+      "mediana_ms": 7440,
+      "min_ms": 6782,
+      "max_ms": 8099
+    },
+    "recuperacion": {
+      "cumplidas": 0,
+      "esperadas": 0,
+      "porcentaje": 0.0
+    },
+    "herramientas": {
+      "llamadas_por_caso": 1.0,
+      "de_mas": 2,
+      "de_mas_porcentaje": 100.0
+    },
+    "tokens_por_caso": 4884,
+    "casos_reales": {
+      "estafas": 0,
+      "estafas_con_alerta": 0,
+      "estafas_en_rojo": 0,
+      "estafas_en_verde": 0,
+      "legitimos": 2,
+      "legitimos_en_verde": 1,
+      "legitimos_en_amarillo": 1,
+      "legitimos_en_rojo": 0
+    }
+  },
+  "registros": [
+    {
+      "id": "r01",
+      "esperado": "legitimo",
+      "obtenido": "verde",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 6782,
+      "tokens_in": 4691,
+      "tokens_out": 180,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "go.wu.com/e/AbCdEf123"
+          }
+        }
+      ],
+      "recuperacion": [],
+      "llamadas_de_mas": [
+        "revisar_enlace"
+      ],
+      "explicacion": "Es un aviso real sobre un giro que llegó a tu nombre. No te piden claves ni dinero.",
+      "que_hacer": "Acércate a un agente autorizado con tu documento de identidad para reclamar el dinero.",
+      "repeticion": 1
+    },
+    {
+      "id": "r02",
+      "esperado": "legitimo",
+      "obtenido": "amarillo",
+      "acierto": true,
+      "error": null,
+      "latencia_ms": 8099,
+      "tokens_in": 4678,
+      "tokens_out": 220,
+      "iteraciones": 2,
+      "herramientas": [
+        {
+          "nombre": "revisar_enlace",
+          "parametros": {
+            "url": "https://oia.didiglobal.com/dlp/AbCd12"
+          }
+        }
+      ],
+      "recuperacion": [],
+      "llamadas_de_mas": [
+        "revisar_enlace"
+      ],
+      "explicacion": "Te reclaman un pago pequeño para que entres al enlace y pongas tus datos de la tarjeta.",
+      "que_hacer": "Revisa directamente en la aplicación oficial si tienes algún cobro pendiente.",
+      "repeticion": 1
+    }
+  ]
+}
